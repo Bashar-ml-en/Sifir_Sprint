@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sifir Sprint - Speed Times-Tables Arcade</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], mono: ['"JetBrains Mono"', 'monospace'] },
+          colors: { arcade: { bg: '#070A14', surface: '#0F1528', card: 'rgba(20,28,52,0.72)', purple: '#8B5CF6', purpleGlow: '#A855F7', indigo: '#6366F1', violetGlow: '#7C3AED', textMuted: '#94A3B8', textDim: '#64748B' } },
+          animation: {
+            'float-slow': 'float 7s ease-in-out infinite', 'pulse-glow': 'pulseGlow 2.8s ease-in-out infinite',
+            'drift-math-1': 'drift1 14s linear infinite', 'drift-math-2': 'drift2 18s linear infinite', 'drift-math-3': 'drift3 12s linear infinite', 'drift-math-4': 'drift4 16s linear infinite',
+            'combo-pop': 'comboPop 0.4s ease-out', 'shake': 'shake 0.3s ease', 'frenzy-pulse': 'frenzyPulse 0.4s ease-in-out infinite',
+            'boss-enter': 'bossEnter 0.5s ease-out', 'flame-burn': 'flameBurn 0.6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: { '0%,100%': { transform: 'translateY(0px) scale(1)' }, '50%': { transform: 'translateY(-6px) scale(1.03)' } },
+            pulseGlow: { '0%,100%': { opacity: '0.45', transform: 'scale(1)' }, '50%': { opacity: '0.8', transform: 'scale(1.08)' } },
+            drift1: { '0%': { transform: 'translateY(110vh) rotate(0deg)', opacity: '0' }, '10%': { opacity: '0.14' }, '90%': { opacity: '0.14' }, '100%': { transform: 'translateY(-10vh) rotate(35deg)', opacity: '0' } },
+            drift2: { '0%': { transform: 'translateY(110vh) rotate(15deg)', opacity: '0' }, '15%': { opacity: '0.12' }, '85%': { opacity: '0.12' }, '100%': { transform: 'translateY(-10vh) rotate(-25deg)', opacity: '0' } },
+            drift3: { '0%': { transform: 'translateY(110vh) rotate(-10deg)', opacity: '0' }, '10%': { opacity: '0.15' }, '90%': { opacity: '0.15' }, '100%': { transform: 'translateY(-10vh) rotate(20deg)', opacity: '0' } },
+            drift4: { '0%': { transform: 'translateY(110vh) rotate(25deg)', opacity: '0' }, '20%': { opacity: '0.1' }, '80%': { opacity: '0.1' }, '100%': { transform: 'translateY(-10vh) rotate(-40deg)', opacity: '0' } },
+            comboPop: { '0%': { transform: 'scale(0.5)', opacity: '0' }, '50%': { transform: 'scale(1.3)', opacity: '1' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+            shake: { '0%,100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-6px)' }, '75%': { transform: 'translateX(6px)' } },
+            frenzyPulse: { '0%,100%': { opacity: '0.15' }, '50%': { opacity: '0.35' } },
+            bossEnter: { '0%': { transform: 'scale(0.3) rotate(-10deg)', opacity: '0' }, '60%': { transform: 'scale(1.15) rotate(3deg)', opacity: '1' }, '100%': { transform: 'scale(1) rotate(0deg)', opacity: '1' } },
+            flameBurn: { '0%,100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.12)' } },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) { .ambient-element { animation: none !important; } }
+    .neon-border-glow { box-shadow: 0 0 20px -3px rgba(168,85,247,0.45), inset 0 0 12px -2px rgba(139,92,246,0.25); }
+    .btn-start-glow { box-shadow: 0 10px 30px -4px rgba(139,92,246,0.55), 0 0 20px 0px rgba(99,102,241,0.35); }
+    .btn-start-glow:hover { box-shadow: 0 14px 38px -4px rgba(139,92,246,0.7), 0 0 26px 2px rgba(168,85,247,0.5); }
+    .btn-start-glow:active { transform: scale(0.96) translateY(1px); box-shadow: 0 6px 18px -2px rgba(139,92,246,0.6); }
+    .glass-card { background: rgba(18,24,46,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(168,85,247,0.2); }
+    .answer-btn { transition: background 0.08s, border-color 0.08s, transform 0.08s; }
+    .answer-btn:active:not(:disabled) { transform: scale(0.95); }
+    .answer-btn.correct { background: #166534 !important; border-color: #22c55e !important; }
+    .answer-btn.wrong { background: #991b1b !important; border-color: #ef4444 !important; }
+    #timer-bar { transition: width 0.3s linear, background 0.3s ease; }
+    #timer.warning { color: #f87171 !important; animation: pulse 0.5s ease infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .screen { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .theme-space { --theme-primary: #8B5CF6; --theme-secondary: #A855F7; --theme-accent: #FBBF24; --theme-bg: #070A14; --theme-surface: #0F1528; }
+    .theme-ocean { --theme-primary: #06B6D4; --theme-secondary: #0891B2; --theme-accent: #22D3EE; --theme-bg: #042F2E; --theme-surface: #083344; }
+    .theme-neon { --theme-primary: #EC4899; --theme-secondary: #F43F5E; --theme-accent: #10B981; --theme-bg: #0A0A0F; --theme-surface: #1A1A2E; }
+    .theme-candy { --theme-primary: #F472B6; --theme-secondary: #FB923C; --theme-accent: #34D399; --theme-bg: #1C1917; --theme-surface: #292524; }
+    [class*="theme-"] { background: var(--theme-bg, #070A14); }
+    [class*="theme-"] .glass-card { background: rgba(18,24,46,0.7); backdrop-filter: blur(16px); }
+    [class*="theme-"] .gradient-btn { background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary)); }
+  </style>
+</head>
+<body class="theme-space h-full text-white font-sans antialiased select-none flex flex-col justify-between items-center overflow-x-hidden relative min-h-screen">
+
+  <!-- Ambient Background -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+    <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-gradient-to-b from-purple-700/25 via-indigo-900/15 to-transparent rounded-full blur-[90px] animate-pulse-glow"></div>
+    <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[380px] h-[380px] bg-gradient-to-t from-violet-900/20 via-indigo-950/10 to-transparent rounded-full blur-[80px]"></div>
+    <div class="ambient-element absolute left-[12%] text-purple-400/20 text-3xl font-mono font-bold animate-drift-math-1" style="animation-delay:0s;">7 x 8</div>
+    <div class="ambient-element absolute left-[82%] text-indigo-400/20 text-2xl font-mono font-bold animate-drift-math-2" style="animation-delay:3s;">9 x 6</div>
+    <div class="ambient-element absolute left-[28%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay:7s;">x</div>
+    <div class="ambient-element absolute left-[70%] text-purple-300/15 text-3xl font-mono font-bold animate-drift-math-4" style="animation-delay:1.5s;">12 x 12</div>
+    <div class="ambient-element absolute left-[45%] text-indigo-300/15 text-2xl font-mono font-bold animate-drift-math-1" style="animation-delay:9s;">6 x 7</div>
+    <div class="ambient-element absolute left-[88%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay:11s;">=</div>
+    <div class="ambient-element absolute left-[8%] text-purple-400/15 text-3xl font-mono font-bold animate-drift-math-2" style="animation-delay:5s;">4 x 9</div>
+  </div>
+
+  <!-- Frenzy Overlay (Feature 2) -->
+  <div id="frenzy-overlay" class="fixed inset-0 pointer-events-none z-20 hidden" style="background: radial-gradient(ellipse at center, transparent 40%, rgba(239,68,68,0.2) 100%);"></div>
+
+  <!-- START SCREEN -->
+  <div id="start-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col justify-between items-center px-6 py-8 sm:py-10 text-center">
+    <div class="w-full flex items-center justify-between pt-2">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/40 border border-purple-500/25 text-[11px] font-semibold text-purple-300 tracking-wider uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+        <span id="mode-label">Arcade Mode</span>
+      </div>
+      <div class="flex items-center gap-1 text-[12px] font-mono font-semibold text-slate-400">
+        <span class="text-purple-400">⚡</span> SPEED QUIZ
+      </div>
+    </div>
+
+    <div class="w-full flex flex-col items-center my-auto py-4">
+      <div class="relative mb-5 flex items-center justify-center animate-float-slow">
+        <div class="absolute w-20 h-20 bg-purple-500/35 rounded-full blur-xl animate-pulse-glow"></div>
+        <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-[#231B47] to-[#131733] border border-purple-400/40 p-3.5 shadow-[0_0_24px_-2px_rgba(168,85,247,0.4)] flex items-center justify-center">
+          <svg class="w-9 h-9 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="2" x2="12" y2="5"/><path d="M10 2h4"/><line x1="19.5" y1="5.5" x2="18" y2="7"/>
+            <circle cx="12" cy="14" r="8"/><polyline points="12 10 12 14 15 14" stroke="#E9D5FF" stroke-width="2.2"/>
+            <circle cx="12" cy="14" r="1.2" fill="#E9D5FF"/>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="text-4xl sm:text-[42px] font-extrabold tracking-tight text-white mb-2 leading-none drop-shadow-[0_2px_12px_rgba(255,255,255,0.18)]">Sifir Sprint</h1>
+
+      <p class="text-[15px] sm:text-base font-medium text-[#94A3B8] max-w-[310px] leading-snug mb-1.5">
+        Answer as many times-tables questions as you can in <span class="text-purple-300 font-semibold underline decoration-purple-500/40 underline-offset-2" id="time-callout">60 seconds</span>!
+      </p>
+      <p class="text-xs sm:text-[13px] text-[#64748B] font-normal max-w-[290px] leading-normal mb-4">Wrong answers come back around so learn as you go.</p>
+
+      <!-- Mode toggle (Feature 8) -->
+      <div class="w-full max-w-[330px] flex gap-2 mb-4">
+        <button type="button" id="mode-arcade" class="mode-btn flex-1 py-2 px-3 rounded-full border border-purple-400 bg-purple-950/80 text-white text-xs font-bold tracking-wide transition-all">Arcade</button>
+        <button type="button" id="mode-daily" class="mode-btn flex-1 py-2 px-3 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs font-bold tracking-wide transition-all">Daily</button>
+      </div>
+
+      <!-- Personal Best -->
+      <div class="w-full max-w-[340px] glass-card rounded-2xl px-4 py-3 mb-4 flex items-center justify-center gap-2.5 shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+        <div class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-amber-300 shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.3)]">
+          <svg class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M6 2h12v4.5A5.5 5.5 0 0 1 12.5 12h-1A5.5 5.5 0 0 1 6 6.5V2zm-4 4a3 3 0 0 0 3 3h1v-4H5a2 2 0 0 0-2 2v-1zm20-1a2 2 0 0 0-2-2h-1v4h1a3 3 0 0 0 3-3v1zm-9 9.5V18h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-3.5a7.48 7.48 0 0 1-5-2.07V15a1 1 0 0 0 2 0v-1.12A7.54 7.54 0 0 0 12 15a7.54 7.54 0 0 0 4-1.12V15a1 1 0 0 0 2 0v-2.57a7.48 7.48 0 0 1-5 2.07z"/></svg>
+        </div>
+        <div class="text-left leading-tight">
+          <div class="text-[13px] font-bold text-purple-200 flex items-center gap-1.5">
+            <span>Your best: <span class="text-white font-extrabold text-[14px]" id="pb-score">0 correct</span></span>
+            <span class="text-purple-400">.</span>
+            <span class="text-amber-300 font-bold" id="pb-streak">0 streak</span>
+          </div>
+          <p class="text-[11px] font-medium text-purple-300/80 tracking-wide mt-0.5" id="pb-motivation">First sprint? Let's go! 🚀</p>
+        </div>
+      </div>
+
+      <!-- Number Range -->
+      <div class="w-full max-w-[340px] mb-3">
+        <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B] block mb-2">Numbers:</span>
+        <div class="flex gap-1.5 justify-center flex-wrap">
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-purple-400 bg-purple-950/80 text-white font-bold tracking-wide transition-all" data-range="2,5">2-5</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="2,9">2-9</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="6,12">6-12</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="2,12">2-12</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="10,20">10-20</button>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="w-full max-w-[330px] flex items-center justify-center gap-2 mb-2.5">
+        <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B]">Timer:</span>
+      </div>
+      <div class="w-full max-w-[330px] grid grid-cols-3 gap-2.5 mb-4" role="radiogroup">
+        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs sm:text-[13px] font-bold tracking-wide transition-all active:scale-95" data-seconds="120">2 min</button>
+        <button type="button" class="duration-btn selected px-3 py-2.5 rounded-full border border-purple-400 bg-purple-950/80 text-white font-bold text-xs sm:text-[13px] tracking-wide neon-border-glow transition-all active:scale-95" data-seconds="60">1 min</button>
+        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs sm:text-[13px] font-bold tracking-wide transition-all active:scale-95" data-seconds="30">30 s</button>
+      </div>
+
+      <!-- Themes (Feature 10) -->
+      <div class="w-full max-w-[340px] mb-4">
+        <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B] block mb-2">Theme:</span>
+        <div class="flex gap-2 justify-center">
+          <button class="theme-btn w-8 h-8 rounded-full border-2 border-purple-400 shadow-[0_0_10px_rgba(139,92,246,0.5)]" data-theme="theme-space" style="background:linear-gradient(135deg,#8B5CF6,#A855F7);"></button>
+          <button class="theme-btn w-8 h-8 rounded-full border border-slate-700/80" data-theme="theme-ocean" style="background:linear-gradient(135deg,#06B6D4,#0891B2);"></button>
+          <button class="theme-btn w-8 h-8 rounded-full border border-slate-700/80" data-theme="theme-neon" style="background:linear-gradient(135deg,#EC4899,#F43F5E);"></button>
+          <button class="theme-btn w-8 h-8 rounded-full border border-slate-700/80" data-theme="theme-candy" style="background:linear-gradient(135deg,#F472B6,#FB923C);"></button>
+        </div>
+      </div>
+
+      <!-- Start -->
+      <div class="w-full max-w-[330px] flex flex-col items-center">
+        <button type="button" id="start-btn" class="gradient-btn w-full py-4 px-8 rounded-full text-white font-extrabold text-lg tracking-wide btn-start-glow transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer" style="background:linear-gradient(135deg,#8B5CF6,#A855F7);">
+          <span>Start Sprint</span>
+          <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+        </button>
+        <span class="text-[11px] font-medium text-slate-500 mt-2 tracking-wide">Press Space or Tap to Jump In</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full flex items-center justify-between pb-2 pt-4 px-2">
+      <button type="button" id="sound-toggle" aria-label="Toggle Sound" class="w-11 h-11 rounded-full border border-slate-700/80 bg-slate-900/50 hover:bg-purple-950/40 hover:border-purple-500/60 text-slate-300 hover:text-white transition-all flex items-center justify-center active:scale-90 group shadow-sm">
+        <svg id="sound-on-icon" class="w-5 h-5 text-purple-300 group-hover:drop-shadow-[0_0_6px_rgba(192,132,252,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+        <svg id="sound-off-icon" class="w-5 h-5 text-slate-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+      </button>
+      <button type="button" id="reset-pb-btn" class="text-[11px] text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">Reset PB</button>
+    </footer>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col px-6 py-8 sm:py-10" style="display:none;">
+    <!-- Power-up bar (Feature 4) -->
+    <div id="powerup-bar" class="w-full flex gap-2 mb-2 justify-center min-h-[36px]"></div>
+
+    <!-- HUD -->
+    <div class="w-full flex items-center justify-between gap-2 mb-1">
+      <div class="flex gap-2 flex-1">
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Score</span>
+          <span class="block text-xl font-extrabold text-white" id="score">0</span>
+        </div>
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Combo</span>
+          <span class="block text-xl font-extrabold text-amber-300 flex items-center justify-center gap-1" id="streak">0 <span id="flame-icon"></span></span>
+        </div>
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Best</span>
+          <span class="block text-xl font-extrabold text-purple-300" id="best-streak">0</span>
+        </div>
+      </div>
+      <div class="w-16 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Time</span>
+        <span class="block text-xl font-extrabold text-[#fbbf24]" id="timer">60</span>
+      </div>
+    </div>
+    <div class="w-full h-1.5 bg-slate-800/60 rounded-full overflow-hidden mb-6">
+      <div id="timer-bar" class="h-full w-full rounded-full" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);"></div>
+    </div>
+    <div class="flex-1 flex items-center justify-center relative">
+      <p id="question-text" class="text-[3.2rem] sm:text-[3.8rem] font-extrabold text-white tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"></p>
+      <div id="combo-popup" class="absolute -top-2 right-4 text-amber-400 font-extrabold text-lg animate-combo-pop hidden pointer-events-none"></div>
+    </div>
+    <!-- Phase indicator (Feature 6) -->
+    <div id="phase-indicator" class="text-center text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1 transition-colors">PHASE 1 - EASY</div>
+    <div class="w-full grid grid-cols-2 gap-3 mt-auto pb-4">
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="0"></button>
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="1"></button>
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="2"></button>
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="3"></button>
+    </div>
+  </div>
+
+  <!-- Boss Battle Overlay (Feature 3) -->
+  <div id="boss-overlay" class="fixed inset-0 z-30 flex items-center justify-center bg-black/70 hidden" style="backdrop-filter:blur(4px);">
+    <div class="text-center">
+      <div class="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 mb-2 animate-combo-pop">BOSS BATTLE</div>
+      <p id="boss-question" class="text-5xl sm:text-6xl font-extrabold text-white animate-boss-enter mb-6"></p>
+      <div class="grid grid-cols-2 gap-3 max-w-[320px] mx-auto">
+        <button class="boss-ans font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white hover:border-amber-400/60 hover:bg-amber-950/30 active:scale-95" data-index="0"></button>
+        <button class="boss-ans font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white hover:border-amber-400/60 hover:bg-amber-950/30 active:scale-95" data-index="1"></button>
+        <button class="boss-ans font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white hover:border-amber-400/60 hover:bg-amber-950/30 active:scale-95" data-index="2"></button>
+        <button class="boss-ans font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white hover:border-amber-400/60 hover:bg-amber-950/30 active:scale-95" data-index="3"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col items-center justify-center px-6 py-10 text-center" style="display:none;">
+    <div class="relative mb-4 flex items-center justify-center">
+      <div class="absolute w-20 h-20 bg-purple-500/35 rounded-full blur-xl animate-pulse-glow"></div>
+      <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-[#231B47] to-[#131733] border border-amber-400/40 p-3.5 shadow-[0_0_24px_-2px_rgba(251,191,36,0.4)] flex items-center justify-center">
+        <svg class="w-9 h-9 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-1 drop-shadow-[0_2px_12px_rgba(255,255,255,0.18)]">Time's Up!</h1>
+    <p class="text-[15px] font-medium text-[#94A3B8] mb-3">Here's how you performed this round.</p>
+
+    <!-- Grade (Feature 5) -->
+    <div id="grade-badge" class="text-5xl font-extrabold mb-3 animate-combo-pop"></div>
+
+    <div class="w-full max-w-[340px] flex gap-3 mb-4">
+      <div class="flex-1 glass-card rounded-2xl py-5 px-3 text-center shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1.5">Score</span>
+        <span class="block text-3xl sm:text-4xl font-extrabold text-white" id="final-score">0</span>
+      </div>
+      <div class="flex-1 glass-card rounded-2xl py-5 px-3 text-center shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1.5">Best Streak</span>
+        <span class="block text-3xl sm:text-4xl font-extrabold text-amber-300" id="final-streak">0</span>
+      </div>
+    </div>
+
+    <div class="w-full max-w-[340px] glass-card rounded-2xl px-4 py-3 mb-4 shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div><span class="block text-[9px] font-bold uppercase tracking-widest text-[#64748B]">Correct</span><span class="block text-lg font-extrabold text-emerald-400" id="final-correct">0</span></div>
+        <div><span class="block text-[9px] font-bold uppercase tracking-widest text-[#64748B]">Wrong</span><span class="block text-lg font-extrabold text-red-400" id="final-wrong">0</span></div>
+        <div><span class="block text-[9px] font-bold uppercase tracking-widest text-[#64748B]">Accuracy</span><span class="block text-lg font-extrabold text-purple-300" id="final-accuracy">0%</span></div>
+      </div>
+    </div>
+
+    <div id="new-pb-badge" class="w-full max-w-[330px] mb-4" style="display:none;">
+      <div class="py-2 px-4 rounded-full bg-amber-950/30 border border-amber-500/30 text-amber-300 text-xs font-bold text-center animate-combo-pop flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>New Personal Best!</span>
+      </div>
+    </div>
+
+    <!-- Share button (Feature 8) -->
+    <button type="button" id="share-btn" class="w-full max-w-[330px] mb-3 py-2.5 px-4 rounded-full border border-purple-500/30 bg-purple-950/20 text-purple-300 text-xs font-bold tracking-wide transition-all hidden flex items-center justify-center gap-2 hover:bg-purple-950/40">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span>Share Score</span>
+    </button>
+
+    <button type="button" id="play-again-btn" class="w-full max-w-[330px] py-4 px-8 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:via-indigo-500 hover:to-violet-500 text-white font-extrabold text-lg tracking-wide btn-start-glow transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+      <span>Play Again</span>
+      <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+  </div>
+
+
+<script>
+  const state = {
+    score: 0, streak: 0, bestStreak: 0, timeRemaining: 60, totalTime: 60,
+    currentQuestion: null, missedQueue: [], previousQuestionText: null,
+    timerInterval: null, isActive: false, isTransitioning: false,
+    soundEnabled: true, rangeMin: 2, rangeMax: 5,
+    correctCount: 0, wrongCount: 0, totalAnswered: 0,
+    isBossBattle: false, phase: 1, powerups: [], frenzyActive: false,
+    dailyMode: false, dailySeed: null
+  };
+
+  const $ = id => document.getElementById(id);
+  const startScreen = $('start-screen'), gameScreen = $('game-screen'), endScreen = $('end-screen');
+  const scoreEl = $('score'), streakEl = $('streak'), bestStreakEl = $('best-streak');
+  const timerEl = $('timer'), timerBar = $('timer-bar'), questionText = $('question-text');
+  const answerBtns = document.querySelectorAll('.answer-btn');
+  const finalScore = $('final-score'), finalStreak = $('final-streak');
+
+  let personalBest = { score: 0, streak: 0 };
+  try { const s = localStorage.getItem('sifir-pb'); if (s) personalBest = JSON.parse(s); } catch (_) {}
+  try { const s = localStorage.getItem('sifir-sound'); if (s === 'false') state.soundEnabled = false; } catch (_) {}
+  try { const t = localStorage.getItem('sifir-theme'); if (t) { document.body.className = document.body.className.replace(/theme-\\w+/g, '').trim() + ' ' + t; } } catch (_) {}
+
+  function updateStartPB() {
+    $('pb-score').textContent = personalBest.score + ' correct';
+    $('pb-streak').textContent = personalBest.streak + ' streak';
+    $('pb-motivation').textContent = personalBest.score > 0 ? 'Can you beat your top score today? 🔥' : 'First sprint? Let\'s go! 🚀';
+  }
+  updateStartPB();
+
+  function savePersonalBest(score, streak) {
+    if (score > personalBest.score || (score === personalBest.score && streak > personalBest.streak)) {
+      personalBest = { score, streak };
+      try { localStorage.setItem('sifir-pb', JSON.stringify(personalBest)); } catch (_) {}
+      return true;
+    }
+    return false;
+  }
+
+  function applySoundUI() {
+    const on = $('sound-on-icon'), off = $('sound-off-icon');
+    if (state.soundEnabled) { on.classList.remove('hidden'); off.classList.add('hidden'); }
+    else { on.classList.add('hidden'); off.classList.remove('hidden'); }
+  }
+  applySoundUI();
+
+  function seededRandom(seed) {
+    return function() { seed = (seed * 16807 + 0) % 2147483647; return (seed - 1) / 2147483646; };
+  }
+  let rng = Math.random;
+
+  // Question pool: track every question asked this round, sub-pools per phase
+  let askedPool = new Set();
+  let phasePool = { 1: [], 2: [], 3: [] };
+  let currentPhase = 1;
+
+  // Generate all unique multiplication pairs for a given range
+  function buildPool(min, max) {
+    const pool = [];
+    const seen = new Set();
+    for (let a = min; a <= max; a++) {
+      for (let b = min; b <= max; b++) {
+        const key = a + 'x' + b;
+        if (!seen.has(key)) {
+          seen.add(key);
+          pool.push({ text: a + ' \u00d7 ' + b, answer: a * b });
+        }
+      }
+    }
+    return shuffle(pool);
+  }
+
+  // Initialize pools for all phases
+  function rebuildPools() {
+    phasePool = {
+      1: shuffle(buildPool(2, 5)),
+      2: shuffle(buildPool(4, 9)),
+      3: shuffle(buildPool(7, 12))
+    };
+  }
+  rebuildPools();
+
+  function randomInt(min, max) { return Math.floor(rng() * (max - min + 1)) + min; }
+
+  function drawFromPool(phase) {
+    let pool = phasePool[phase];
+    // Refill pool if empty (all combinations exhausted)
+    if (!pool || pool.length === 0) {
+      const ranges = { 1: [2, 5], 2: [4, 9], 3: [7, 12] };
+      const [min, max] = ranges[phase] || [2, 12];
+      pool = shuffle(buildPool(min, max));
+      phasePool[phase] = pool;
+    }
+    // Pick first unused question, skip if already asked
+    let idx = 0;
+    let attempts = 0;
+    while (idx < pool.length && attempts < pool.length) {
+      const q = pool[idx];
+      const key = q.text;
+      if (!askedPool.has(key)) {
+        askedPool.add(key);
+        pool.splice(idx, 1);
+        return q;
+      }
+      idx++;
+      attempts++;
+    }
+    // All asked — reset and pick first
+    askedPool.clear();
+    if (pool.length > 0) {
+      const q = pool[0];
+      pool.splice(0, 1);
+      askedPool.add(q.text);
+      return q;
+    }
+    // Fallback: generate on the fly
+    const a = randomInt(state.rangeMin, state.rangeMax);
+    const b = randomInt(state.rangeMin, state.rangeMax);
+    return { text: a + ' \u00d7 ' + b, answer: a * b };
+  }
+
+  function generateQuestion() {
+    if (state.isBossBattle) return { text: 'BOSS', answer: 0 };
+    // Use the current phase range for fallback, but draw-from-pool is preferred
+    return drawFromPool(state.phase);
+  }
+
+  function optionsFor(question) {
+    if (state.isBossBattle) return [0, 0, 0, 0];
+    const correct = question.answer;
+    const opts = new Set([correct]);
+    while (opts.size < 4) {
+      const offset = randomInt(1, 4) * (Math.random() < 0.5 ? 1 : -1);
+      const val = correct + offset;
+      if (val >= 0) opts.add(val);
+    }
+    return shuffle([...opts]);
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+    return arr;
+  }
+
+  let audioCtx = null;
+  function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+  function playTone(freq, dur, type) {
+    if (!state.soundEnabled) return;
+    try { const ctx = getAudioCtx(), o = ctx.createOscillator(), g = ctx.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(0.15, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur); o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime); o.stop(ctx.currentTime + dur); } catch (_) {}
+  }
+  function playCorrect() { playTone(523.25, 0.15, 'sine'); setTimeout(() => playTone(659.25, 0.15, 'sine'), 80); setTimeout(() => playTone(783.99, 0.2, 'sine'), 160); }
+  function playWrong() { playTone(200, 0.25, 'sawtooth'); setTimeout(() => playTone(150, 0.3, 'sawtooth'), 120); }
+  function playTick() { playTone(880, 0.05, 'square'); }
+  function playEnd() { playTone(440, 0.2, 'sine'); setTimeout(() => playTone(350, 0.2, 'sine'), 200); setTimeout(() => playTone(260, 0.4, 'sine'), 400); }
+  function playBossEnter() { playTone(330, 0.2, 'sawtooth'); setTimeout(() => playTone(440, 0.2, 'sawtooth'), 150); setTimeout(() => playTone(550, 0.3, 'sawtooth'), 300); }
+  function playPowerup() { playTone(880, 0.1, 'sine'); setTimeout(() => playTone(1100, 0.15, 'sine'), 80); }
+
+  function updateFlame(streak) {
+    const el = $('flame-icon');
+    if (streak < 3) { el.textContent = ''; return; }
+    const sizes = ['🔥', '🔥🔥', '🔥🔥🔥', '🔥🔥🔥🔥'];
+    el.textContent = sizes[Math.min(3, Math.floor((streak - 3) / 2))];
+    el.className = streak >= 8 ? 'animate-flame-burn inline-block' : 'inline-block';
+  }
+
+  const POWERUP_TYPES = [
+    { id: 'freeze', name: '⏸ Freeze', desc: 'Freeze time 4s', duration: 4000 },
+    { id: 'double', name: '🟢 2x Pts', desc: 'Double points 8s', duration: 8000 }
+  ];
+  let activePowerup = null;
+  let powerupTimer = null;
+
+  function grantPowerup() {
+    if (state.isBossBattle || !state.isActive) return;
+    const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+    const bar = $('powerup-bar');
+    const btn = document.createElement('button');
+    btn.className = 'px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/30 text-emerald-300 text-xs font-bold transition-all active:scale-90 animate-combo-pop';
+    btn.textContent = type.name;
+    btn.title = type.desc;
+    btn.dataset.type = type.id;
+    btn.addEventListener('click', () => activatePowerup(type, btn));
+    bar.appendChild(btn);
+  }
+
+  function activatePowerup(type, btn) {
+    if (activePowerup) return;
+    if (powerupTimer) clearTimeout(powerupTimer);
+    activePowerup = type;
+    playPowerup();
+    btn.textContent = '✓ Active';
+    btn.className = 'px-3 py-1 rounded-full border border-emerald-400 bg-emerald-800/50 text-white text-xs font-bold';
+    powerupTimer = setTimeout(() => { activePowerup = null; btn.remove(); }, type.duration);
+    setTimeout(() => { const c = $('powerup-bar').children; for (const ch of c) if (ch !== btn) ch.remove(); }, 200);
+  }
+
+  function getScoreMultiplier() {
+    let mult = 1 + (state.streak * 0.5);
+    if (activePowerup && activePowerup.id === 'double') mult *= 2;
+    if (state.frenzyActive) mult *= 1.5;
+    return Math.round(mult * 10) / 10;
+  }
+
+  function getPhase(timeLeft, totalTime) {
+    const elapsed = totalTime - timeLeft;
+    if (elapsed / totalTime < 0.3) return 1;
+    if (elapsed / totalTime < 0.6) return 2;
+    return 3;
+  }
+
+  function updatePhase(timeLeft, totalTime) {
+    const phase = getPhase(timeLeft, totalTime);
+    if (phase !== state.phase) {
+      state.phase = phase;
+      currentPhase = phase;
+      askedPool.clear();
+      const labels = ['', 'EASY', 'MEDIUM', 'HARD'];
+      const colors = ['', 'text-emerald-500', 'text-amber-500', 'text-red-500'];
+      const ranges = ['', { min: 2, max: 5 }, { min: 4, max: 9 }, { min: 7, max: 12 }];
+      const ind = $('phase-indicator');
+      ind.textContent = 'PHASE ' + phase + ' · ' + labels[phase];
+      ind.className = 'text-center text-[10px] font-bold uppercase tracking-widest ' + colors[phase] + ' mb-1 transition-colors';
+      if (!state.dailyMode) { state.rangeMin = ranges[phase].min; state.rangeMax = ranges[phase].max; }
+    }
+  }
+
+  function updateFrenzy(timeLeft) {
+    const overlay = $('frenzy-overlay');
+    if (timeLeft <= 10 && timeLeft > 0) {
+      state.frenzyActive = true;
+      overlay.classList.remove('hidden');
+      overlay.classList.add('animate-frenzy-pulse');
+    } else {
+      state.frenzyActive = false;
+      overlay.classList.add('hidden');
+      overlay.classList.remove('animate-frenzy-pulse');
+    }
+  }
+
+  let bossResolve = null;
+
+  function triggerBossBattle() {
+    state.isBossBattle = true;
+    playBossEnter();
+    const a = randomInt(12, 20), b = randomInt(12, 20);
+    bossResolve = { answer: a * b, text: a + ' \u00d7 ' + b };
+    $('boss-question').textContent = bossResolve.text;
+    const opts = optionsFor({ answer: bossResolve.answer });
+    document.querySelectorAll('.boss-ans').forEach((btn, i) => {
+      btn.textContent = opts[i]; btn.dataset.value = opts[i];
+      btn.className = 'boss-ans font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white hover:border-amber-400/60 hover:bg-amber-950/30 active:scale-95';
+      btn.disabled = false;
+    });
+    $('boss-overlay').classList.remove('hidden');
+    gameScreen.classList.add('animate-shake');
+    setTimeout(() => gameScreen.classList.remove('animate-shake'), 300);
+  }
+
+  document.querySelectorAll('.boss-ans').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (state.isTransitioning || !state.isActive) return;
+      state.isTransitioning = true;
+      const selected = parseInt(this.dataset.value, 10);
+      const isCorrect = selected === bossResolve.answer;
+      if (isCorrect) {
+        this.classList.add('correct'); playCorrect();
+        state.score += 5; state.streak++; state.correctCount++;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      } else {
+        this.classList.add('wrong'); playWrong();
+        state.streak = 0; state.wrongCount++;
+      }
+      state.totalAnswered++;
+      updateHUD();
+      setTimeout(() => { $('boss-overlay').classList.add('hidden'); state.isBossBattle = false; state.isTransitioning = false; loadNextQuestion(); }, 400);
+    });
+  });
+
+  function loadNextQuestion() {
+    if (!state.isActive || state.isBossBattle) return;
+    let q;
+    const useMissed = state.missedQueue.length >= 3 && Math.random() < 0.4;
+    if (useMissed) { q = state.missedQueue.shift(); if (q.text === state.previousQuestionText) { state.missedQueue.push(q); q = state.missedQueue.shift(); } }
+    else { let att = 0; do { q = generateQuestion(); att++; } while (q.text === state.previousQuestionText && att < 20); }
+    state.currentQuestion = q;
+    state.previousQuestionText = q.text;
+    questionText.textContent = q.text;
+    const opts = optionsFor(q);
+    answerBtns.forEach((btn, i) => {
+      btn.textContent = opts[i]; btn.dataset.value = opts[i];
+      btn.className = 'answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]';
+      btn.disabled = false;
+    });
+    state.isTransitioning = false;
+  }
+
+  function showComboPopup(streak) {
+    const popup = $('combo-popup');
+    const msgs = ['Nice!', 'Good!', 'Great!', 'Awesome!', 'On Fire!', 'Unstoppable!', 'Legendary!'];
+    const mult = getScoreMultiplier();
+    popup.textContent = streak >= 10 ? msgs[Math.min(6, Math.floor(streak / 2))] + ' x' + mult : 'x' + mult;
+    popup.classList.remove('hidden', 'animate-combo-pop');
+    void popup.offsetWidth;
+    popup.classList.add('animate-combo-pop');
+    setTimeout(() => popup.classList.add('hidden'), 600);
+  }
+
+  function handleAnswer(e) {
+    const btn = e.currentTarget;
+    if (state.isTransitioning || !state.isActive || btn.disabled) return;
+    state.isTransitioning = true;
+    btn.disabled = true;
+    const selected = parseInt(btn.dataset.value, 10);
+    const correct = state.currentQuestion.answer;
+    const isCorrect = selected === correct;
+    if (isCorrect) {
+      btn.classList.remove('border-purple-500/20', 'bg-[#0F1528]', 'hover:border-purple-400/50', 'hover:bg-purple-950/30');
+      btn.classList.add('correct');
+      playCorrect();
+      state.score += Math.round(getScoreMultiplier());
+      state.streak++; state.correctCount++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      if (state.streak >= 3) showComboPopup(state.streak);
+      updateFlame(state.streak);
+      if (state.correctCount % 7 === 0 && state.correctCount > 0) grantPowerup();
+      if (state.correctCount % 10 === 0 && state.correctCount > 0) setTimeout(() => triggerBossBattle(), 300);
+    } else {
+      btn.classList.remove('border-purple-500/20', 'bg-[#0F1528]', 'hover:border-purple-400/50', 'hover:bg-purple-950/30');
+      btn.classList.add('wrong');
+      playWrong();
+      state.streak = 0; state.wrongCount++;
+      updateFlame(0);
+      state.missedQueue.push({ ...state.currentQuestion });
+    }
+    state.totalAnswered++;
+    updateHUD();
+    setTimeout(() => { state.isTransitioning = false; loadNextQuestion(); }, 300);
+  }
+
+  answerBtns.forEach(btn => btn.addEventListener('click', handleAnswer));
+
+  function updateHUD() {
+    scoreEl.textContent = state.score;
+    streakEl.textContent = state.streak;
+    bestStreakEl.textContent = state.bestStreak;
+    timerEl.textContent = state.timeRemaining;
+    timerEl.className = state.timeRemaining <= 10 ? 'block text-xl font-extrabold warning' : 'block text-xl font-extrabold text-[#fbbf24]';
+    const ratio = state.timeRemaining / state.totalTime;
+    timerBar.style.width = (ratio * 100) + '%';
+    timerBar.style.background = ratio <= 1/6 ? 'linear-gradient(90deg,#ef4444,#dc2626)' : ratio <= 0.5 ? 'linear-gradient(90deg,#f59e0b,#f97316)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)';
+    updatePhase(state.timeRemaining, state.totalTime);
+    updateFrenzy(state.timeRemaining);
+  }
+
+  function startTimer() {
+    state.timerInterval = setInterval(() => {
+      state.timeRemaining--;
+      if (state.timeRemaining <= 10 && state.timeRemaining > 0) playTick();
+      updateHUD();
+      if (state.timeRemaining <= 0) endRound();
+    }, 1000);
+  }
+
+  function getGrade(score, totalTime) {
+    const ratio = score / (totalTime * 2);
+    if (ratio >= 0.8) return { grade: 'S', color: 'text-amber-400' };
+    if (ratio >= 0.6) return { grade: 'A', color: 'text-emerald-400' };
+    if (ratio >= 0.4) return { grade: 'B', color: 'text-blue-400' };
+    if (ratio >= 0.2) return { grade: 'C', color: 'text-purple-400' };
+    return { grade: 'D', color: 'text-slate-400' };
+  }
+
+  function endRound() {
+    state.isActive = false;
+    clearInterval(state.timerInterval); state.timerInterval = null;
+    $('frenzy-overlay').classList.add('hidden');
+    playEnd();
+    const isNewPB = savePersonalBest(state.score, state.bestStreak);
+    updateStartPB();
+    gameScreen.style.display = 'none';
+    finalScore.textContent = state.score;
+    finalStreak.textContent = state.bestStreak;
+    $('final-correct').textContent = state.correctCount;
+    $('final-wrong').textContent = state.wrongCount;
+    $('final-accuracy').textContent = state.totalAnswered > 0 ? Math.round((state.correctCount / state.totalAnswered) * 100) + '%' : '0%';
+    $('new-pb-badge').style.display = isNewPB ? 'block' : 'none';
+    const g = getGrade(state.score, state.totalTime);
+    const gradeEl = $('grade-badge');
+    gradeEl.textContent = g.grade;
+    gradeEl.className = 'text-5xl font-extrabold mb-3 ' + g.color + ' animate-combo-pop';
+    const shareBtn = $('share-btn');
+    if (state.dailyMode) { shareBtn.classList.remove('hidden'); shareBtn.classList.add('flex'); }
+    else { shareBtn.classList.add('hidden'); shareBtn.classList.remove('flex'); }
+    endScreen.style.display = 'flex';
+  }
+
+  function resetState() {
+    state.score = 0; state.streak = 0; state.bestStreak = 0;
+    state.timeRemaining = state.totalTime;
+    state.currentQuestion = null; state.missedQueue = []; state.previousQuestionText = null;
+    askedPool = new Set(); currentPhase = 1; rebuildPools();
+    state.isActive = false; state.isTransitioning = false;
+    state.correctCount = 0; state.wrongCount = 0; state.totalAnswered = 0;
+    state.isBossBattle = false; state.phase = 1; state.frenzyActive = false;
+    state.powerups = []; activePowerup = null;
+    if (powerupTimer) { clearTimeout(powerupTimer); powerupTimer = null; }
+    $('powerup-bar').innerHTML = '';
+    updateFlame(0);
+    if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+    updateHUD();
+  }
+
+  function startGame() {
+    resetState();
+    if (state.dailyMode) {
+      const today = new Date();
+      state.dailySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+      rng = seededRandom(state.dailySeed);
+    } else { rng = Math.random; }
+    if (!state.dailyMode) { state.rangeMin = 2; state.rangeMax = 5; }
+    startScreen.style.display = 'none';
+    endScreen.style.display = 'none';
+    gameScreen.style.display = 'flex';
+    state.isActive = true;
+    loadNextQuestion();
+    startTimer();
+  }
+
+  function setMode(mode) {
+    state.dailyMode = mode === 'daily';
+    const arc = $('mode-arcade'), daily = $('mode-daily');
+    [arc, daily].forEach(b => { b.classList.remove('border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow'); b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300'); });
+    const active = mode === 'daily' ? daily : arc;
+    active.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
+    active.classList.add('border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow');
+    $('mode-label').textContent = mode === 'daily' ? 'Daily Challenge' : 'Arcade Mode';
+  }
+  $('mode-arcade').addEventListener('click', () => setMode('arcade'));
+  $('mode-daily').addEventListener('click', () => setMode('daily'));
+
+  document.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.range-btn').forEach(b => { b.classList.remove('border-purple-400', 'bg-purple-950/80', 'text-white'); b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300'); });
+      btn.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
+      btn.classList.add('border-purple-400', 'bg-purple-950/80', 'text-white');
+      const [min, max] = btn.dataset.range.split(',').map(Number);
+      state.rangeMin = min; state.rangeMax = max;
+    });
+  });
+
+  document.querySelectorAll('.duration-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.duration-btn').forEach(b => { b.classList.remove('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow'); b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300'); });
+      btn.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
+      btn.classList.add('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow');
+      state.totalTime = parseInt(btn.dataset.seconds, 10);
+      state.timeRemaining = state.totalTime;
+      const labels = { 120: '120 seconds', 60: '60 seconds', 30: '30 seconds' };
+      $('time-callout').textContent = labels[state.totalTime] || '60 seconds';
+      updateHUD();
+    });
+  });
+
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.theme-btn').forEach(b => {
+        b.className = b.className.replace(/border-[\\w-]+(\\s+shadow-\\[?[^\\]]*\\]?)?/g, 'border border-slate-700/80');
+      });
+      btn.className = btn.className.replace(/border-[\\w/-]+/g, 'border-2 border-purple-400') + ' shadow-[0_0_10px_rgba(139,92,246,0.5)]';
+      const theme = btn.dataset.theme;
+      document.body.className = document.body.className.replace(/theme-\\w+/g, '').trim() + ' ' + theme;
+      try { localStorage.setItem('sifir-theme', theme); } catch (_) {}
+    });
+  });
+
+  $('sound-toggle').addEventListener('click', () => {
+    state.soundEnabled = !state.soundEnabled;
+    try { localStorage.setItem('sifir-sound', state.soundEnabled); } catch (_) {}
+    applySoundUI();
+  });
+
+  $('reset-pb-btn').addEventListener('click', () => {
+    if (confirm('Reset your personal best score?')) { personalBest = { score: 0, streak: 0 }; try { localStorage.setItem('sifir-pb', JSON.stringify(personalBest)); } catch (_) {} updateStartPB(); }
+  });
+
+  $('share-btn').addEventListener('click', () => {
+    const text = 'Sifir Sprint Daily - Score: ' + state.score + ', Streak: ' + state.bestStreak;
+    if (navigator.share) { navigator.share({ title: 'Sifir Sprint', text: text, url: 'https://sifir-sprint.vercel.app' }); }
+    else { navigator.clipboard.writeText(text); }
+  });
+
+  $('start-btn').addEventListener('click', startGame);
+  $('play-again-btn').addEventListener('click', startGame);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && startScreen.style.display !== 'none') { e.preventDefault(); startGame(); }
+  });
+</script>
+</body>
+</html>

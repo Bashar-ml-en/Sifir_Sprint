@@ -4,7 +4,7 @@
   "description": "Sifir Sprint - 60-second times-tables arcade quiz game (Android + Web)",
   "private": true,
   "scripts": {
-    "build:web": "node -e \"require('fs').cpSync('index.html', 'dist/index.html')\"",
+    "build:web": "node -e \"require('fs').cpSync('index.html', 'dist/index.html');require('fs').cpSync('game.js', 'dist/game.js')\"",
     "build:android": "npx cap sync android",
     "build": "npm run build:web && npm run build:android",
     "open:android": "npx cap open android",
