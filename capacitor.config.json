@@ -11,6 +11,9 @@
       "launchShowDuration": 1500,
       "backgroundColor": "#070A14",
       "androidSplashResourceName": "splash"
+    },
+    "AdMob": {
+      "appId": "ca-app-pub-3940256099942544~3347511713"
     }
   }
 }

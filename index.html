@@ -209,6 +209,20 @@
         </button>
         <span class="text-[11px] font-medium text-slate-500 mt-2 tracking-wide">Press Space or Tap to Jump In</span>
       </div>
+
+      <!-- Remove Ads -->
+      <div id="remove-ads-section" class="w-full max-w-[330px] mt-4">
+        <button type="button" id="remove-ads-btn" class="w-full py-2.5 px-4 rounded-full border border-amber-500/40 bg-amber-950/20 hover:bg-amber-950/40 text-amber-300 text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span>Remove Ads</span>
+        </button>
+      </div>
+      <div id="ads-removed-badge" class="w-full max-w-[330px] mt-4" style="display:none;">
+        <div class="py-2.5 px-4 rounded-full bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold text-center flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <span>Ads Removed ✓</span>
+        </div>
+      </div>
     </div>
 
     <footer class="w-full flex items-center justify-center pb-2 pt-4">
@@ -271,6 +285,11 @@
       <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="2"></button>
       <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="3"></button>
     </div>
+  </div>
+
+  <!-- Ad Banner (shown during gameplay if ads not removed) -->
+  <div id="ad-banner" class="relative z-10 w-full max-w-[430px] mx-auto flex justify-center" style="display:none; min-height: 50px;">
+    <div id="banner-ad-container"></div>
   </div>
 
   <!-- ==================== END SCREEN ==================== -->
@@ -605,6 +624,76 @@
   // ---------- Start / Play Again ----------
   $('start-btn').addEventListener('click', startGame);
   $('play-again-btn').addEventListener('click', startGame);
+
+  // ---------- AdMob Integration ----------
+  let adsRemoved = false;
+  try {
+    const saved = localStorage.getItem('sifir-noads');
+    if (saved === 'true') adsRemoved = true;
+  } catch (_) {}
+  if (adsRemoved) {
+    $('remove-ads-section').style.display = 'none';
+    $('ads-removed-badge').style.display = 'block';
+  }
+
+  function showBanner() {
+    if (adsRemoved) return;
+    const container = $('banner-ad-container');
+    if (!container) return;
+    if (typeof AdMob === 'undefined') return;
+    try {
+      AdMob.showBanner({
+        adId: 'ca-app-pub-3940256099942544/6300978111',
+        position: 'bottom',
+        margin: 0
+      });
+    } catch (_) {}
+  }
+
+  function hideBanner() {
+    if (typeof AdMob === 'undefined') return;
+    try { AdMob.hideBanner(); } catch (_) {}
+  }
+
+  // Show banner when game starts, hide when not playing
+  const origStartGame = startGame;
+  startGame = function() {
+    origStartGame();
+    setTimeout(showBanner, 500);
+  };
+  const origEndRound = endRound;
+  endRound = function() {
+    origEndRound();
+    hideBanner();
+  };
+
+  // Remove Ads purchase
+  $('remove-ads-btn').addEventListener('click', async () => {
+    if (typeof AdMob === 'undefined') {
+      alert('Purchase is only available in the Android app.');
+      return;
+    }
+    try {
+      const result = await AdMob.purchase({
+        sku: 'remove_ads',
+        type: 'inapp'
+      });
+      if (result.success) {
+        adsRemoved = true;
+        try { localStorage.setItem('sifir-noads', 'true'); } catch (_) {}
+        $('remove-ads-section').style.display = 'none';
+        $('ads-removed-badge').style.display = 'block';
+        hideBanner();
+      }
+    } catch (_) {
+      alert('Purchase failed. Please try again.');
+    }
+  });
+
+  // Initialize AdMob on load
+  if (typeof AdMob !== 'undefined') {
+    AdMob.initialize();
+  }
 
   // Space key to start
   document.addEventListener('keydown', (e) => {
