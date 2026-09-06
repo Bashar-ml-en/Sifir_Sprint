@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sifir Sprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="app">
+  <!-- START SCREEN -->
+  <div id="start-screen" class="screen">
+    <div class="hero-icon">⏱️</div>
+    <h1 class="title">Sifir Sprint</h1>
+    <p class="subtitle">Answer as many times-tables questions as you can in 60 seconds!</p>
+    <p class="subtitle small">Wrong answers come back around — so learn as you go.</p>
+    <div class="difficulty-selector">
+      <label class="diff-label">Timer:</label>
+      <div class="diff-options">
+        <button class="diff-btn" data-seconds="120">2 min</button>
+        <button class="diff-btn selected" data-seconds="60">1 min</button>
+        <button class="diff-btn" data-seconds="30">30 s</button>
+      </div>
+    </div>
+    <button id="start-btn" class="btn primary">Start</button>
+    <button id="sound-toggle" class="btn icon-btn" aria-label="Toggle sound">🔊</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen" style="display:none;">
+    <div id="hud">
+      <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="score">0</span></div>
+      <div class="hud-item"><span class="hud-label">Streak</span><span class="hud-value" id="streak">0</span></div>
+      <div class="hud-item"><span class="hud-label">Best</span><span class="hud-value" id="best-streak">0</span></div>
+      <div class="hud-item timer-item"><span class="hud-label">Time</span><span class="hud-value" id="timer">60</span></div>
+    </div>
+    <div id="timer-bar-container"><div id="timer-bar"></div></div>
+    <div id="question-area">
+      <p id="question-text"></p>
+    </div>
+    <div id="answer-buttons">
+      <button class="answer-btn" data-index="0"></button>
+      <button class="answer-btn" data-index="1"></button>
+      <button class="answer-btn" data-index="2"></button>
+      <button class="answer-btn" data-index="3"></button>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen" class="screen" style="display:none;">
+    <div class="hero-icon">🏁</div>
+    <h1 class="title">Time's Up!</h1>
+    <div class="end-stats">
+      <div class="end-stat">
+        <span class="end-stat-label">Final Score</span>
+        <span class="end-stat-value" id="final-score">0</span>
+      </div>
+      <div class="end-stat">
+        <span class="end-stat-label">Best Streak</span>
+        <span class="end-stat-value" id="final-streak">0</span>
+      </div>
+    </div>
+    <button id="play-again-btn" class="btn primary">Play Again</button>
+  </div>
+</div>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  #app {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px 16px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Screens ---------- */
+  .screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .hero-icon { font-size: 3rem; }
+  .title { font-size: 2rem; font-weight: 800; color: #f8fafc; text-align: center; }
+  .subtitle { font-size: 1rem; color: #94a3b8; text-align: center; line-height: 1.5; }
+  .subtitle.small { font-size: 0.85rem; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 16px 48px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    min-height: 56px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+  .btn.primary:hover { box-shadow: 0 6px 28px rgba(99, 102, 241, 0.6); }
+  .btn.icon-btn {
+    background: transparent;
+    border: 2px solid #334155;
+    color: #e2e8f0;
+    font-size: 1.3rem;
+    padding: 12px 16px;
+    border-radius: 14px;
+    min-height: 48px;
+  }
+
+  /* ---------- Difficulty ---------- */
+  .difficulty-selector {
+    width: 100%;
+    text-align: center;
+  }
+  .diff-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+  .diff-options {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .diff-btn {
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: 2px solid #334155;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 42px;
+  }
+  .diff-btn.selected {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+  }
+  .diff-btn:active { transform: scale(0.95); }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .hud-item {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .hud-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 2px;
+  }
+  .hud-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .timer-item .hud-value { color: #fbbf24; }
+  #timer.warning { color: #f87171 !important; animation: pulse 0.5s ease infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* ---------- Timer bar ---------- */
+  #timer-bar-container {
+    width: 100%;
+    height: 6px;
+    background: #1e293b;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  #timer-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 4px;
+    transition: width 0.3s linear;
+  }
+
+  /* ---------- Question ---------- */
+  #question-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  #question-text {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #f8fafc;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- Answer buttons ---------- */
+  #answer-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: auto;
+    padding-bottom: 8px;
+  }
+  .answer-btn {
+    font-family: inherit;
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 20px 12px;
+    min-height: 68px;
+    border: 2px solid #334155;
+    border-radius: 14px;
+    background: #1e293b;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: background 0.08s, border-color 0.08s, transform 0.08s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .answer-btn:active { transform: scale(0.95); background: #334155; }
+  .answer-btn:disabled { cursor: default; opacity: 0.7; }
+  .answer-btn.correct {
+    background: #166534 !important;
+    border-color: #22c55e !important;
+    animation: flashCorrect 0.25s ease;
+  }
+  .answer-btn.wrong {
+    background: #991b1b !important;
+    border-color: #ef4444 !important;
+    animation: flashWrong 0.25s ease;
+  }
+  @keyframes flashCorrect {
+    0% { background: #22c55e; }
+    100% { background: #166534; }
+  }
+  @keyframes flashWrong {
+    0% { background: #ef4444; }
+    100% { background: #991b1b; }
+  }
+
+  /* ---------- End screen ---------- */
+  .end-stats {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+  }
+  .end-stat {
+    flex: 1;
+    background: #1e293b;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+  }
+  .end-stat-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .end-stat-value {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #f1f5f9;
+  }
+
+  /* ---------- QOL ---------- */
+  @media (max-width: 380px) {
+    #question-text { font-size: 2.8rem; }
+    .answer-btn { font-size: 1.3rem; min-height: 60px; }
+    .hud-value { font-size: 1.2rem; }
+  }
+  @media (min-height: 800px) {
+    #question-text { font-size: 4rem; }
+    .answer-btn { min-height: 76px; }
+  }
+</style>
+
+<script>
+  // ---------- Game State ----------
+  const state = {
+    score: 0,
+    streak: 0,
+    bestStreak: 0,
+    timeRemaining: 60,
+    totalTime: 60,
+    currentQuestion: null,
+    missedQueue: [],
+    previousQuestionText: null,
+    timerInterval: null,
+    isActive: false,
+    isTransitioning: false,
+    soundEnabled: true
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const startScreen = $('start-screen');
+  const gameScreen = $('game-screen');
+  const endScreen = $('end-screen');
+  const scoreEl = $('score');
+  const streakEl = $('streak');
+  const bestStreakEl = $('best-streak');
+  const timerEl = $('timer');
+  const timerBar = $('timer-bar');
+  const questionText = $('question-text');
+  const answerBtns = document.querySelectorAll('.answer-btn');
+  const finalScore = $('final-score');
+  const finalStreak = $('final-streak');
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function generateQuestion() {
+    const a = randomInt(2, 12);
+    const b = randomInt(2, 12);
+    return { text: `${a} \u00d7 ${b}`, answer: a * b };
+  }
+
+  function optionsFor(question) {
+    const correct = question.answer;
+    const opts = new Set([correct]);
+    while (opts.size < 4) {
+      const offset = randomInt(1, 4) * (Math.random() < 0.5 ? 1 : -1);
+      const val = correct + offset;
+      if (val >= 0) opts.add(val);
+    }
+    return shuffle([...opts]);
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ---------- Sound effects (Web Audio) ----------
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playTone(freq, duration, type) {
+    if (!state.soundEnabled) return;
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    } catch (_) {}
+  }
+
+  function playCorrect() {
+    playTone(523.25, 0.15, 'sine');
+    setTimeout(() => playTone(659.25, 0.15, 'sine'), 80);
+    setTimeout(() => playTone(783.99, 0.2, 'sine'), 160);
+  }
+
+  function playWrong() {
+    playTone(200, 0.25, 'sawtooth');
+    setTimeout(() => playTone(150, 0.3, 'sawtooth'), 120);
+  }
+
+  function playTick() {
+    playTone(880, 0.05, 'square');
+  }
+
+  function playEnd() {
+    playTone(440, 0.2, 'sine');
+    setTimeout(() => playTone(350, 0.2, 'sine'), 200);
+    setTimeout(() => playTone(260, 0.4, 'sine'), 400);
+  }
+
+  function loadNextQuestion() {
+    if (!state.isActive) return;
+
+    let q;
+    const useMissed = state.missedQueue.length >= 3 && Math.random() < 0.4;
+
+    if (useMissed) {
+      q = state.missedQueue.shift();
+      if (q.text === state.previousQuestionText) {
+        state.missedQueue.push(q);
+        q = state.missedQueue.shift();
+      }
+    } else {
+      let attempts = 0;
+      do {
+        q = generateQuestion();
+        attempts++;
+      } while (q.text === state.previousQuestionText && attempts < 20);
+    }
+
+    state.currentQuestion = q;
+    state.previousQuestionText = q.text;
+    questionText.textContent = q.text;
+
+    const opts = optionsFor(q);
+    answerBtns.forEach((btn, i) => {
+      btn.textContent = opts[i];
+      btn.dataset.value = opts[i];
+      btn.className = 'answer-btn';
+      btn.disabled = false;
+    });
+    state.isTransitioning = false;
+  }
+
+  function handleAnswer(e) {
+    const btn = e.currentTarget;
+    if (state.isTransitioning || !state.isActive || btn.disabled) return;
+    state.isTransitioning = true;
+    btn.disabled = true;
+
+    const selected = parseInt(btn.dataset.value, 10);
+    const correct = state.currentQuestion.answer;
+    const isCorrect = selected === correct;
+
+    if (isCorrect) {
+      btn.classList.add('correct');
+      playCorrect();
+      state.score++;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    } else {
+      btn.classList.add('wrong');
+      playWrong();
+      state.streak = 0;
+      state.missedQueue.push({ ...state.currentQuestion });
+    }
+
+    updateHUD();
+
+    setTimeout(() => {
+      loadNextQuestion();
+    }, 250);
+  }
+
+  answerBtns.forEach(btn => btn.addEventListener('click', handleAnswer));
+
+  function updateHUD() {
+    scoreEl.textContent = state.score;
+    streakEl.textContent = state.streak;
+    bestStreakEl.textContent = state.bestStreak;
+    timerEl.textContent = state.timeRemaining;
+    timerEl.className = state.timeRemaining <= 10 ? 'warning' : '';
+    const ratio = state.timeRemaining / state.totalTime;
+    timerBar.style.width = `${ratio * 100}%`;
+    timerBar.style.background = ratio <= 1/6
+      ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+      : ratio <= 0.5
+      ? 'linear-gradient(90deg, #f59e0b, #f97316)'
+      : 'linear-gradient(90deg, #6366f1, #8b5cf6)';
+  }
+
+  function startTimer() {
+    state.timerInterval = setInterval(() => {
+      state.timeRemaining--;
+      if (state.timeRemaining <= 10 && state.timeRemaining > 0) playTick();
+      updateHUD();
+      if (state.timeRemaining <= 0) {
+        endRound();
+      }
+    }, 1000);
+  }
+
+  function endRound() {
+    state.isActive = false;
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+    playEnd();
+    gameScreen.style.display = 'none';
+    finalScore.textContent = state.score;
+    finalStreak.textContent = state.bestStreak;
+    endScreen.style.display = 'flex';
+  }
+
+  function resetState() {
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.timeRemaining = state.totalTime;
+    state.currentQuestion = null;
+    state.missedQueue = [];
+    state.previousQuestionText = null;
+    state.isActive = false;
+    state.isTransitioning = false;
+    if (state.timerInterval) {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+    }
+    updateHUD();
+  }
+
+  function startGame() {
+    resetState();
+    startScreen.style.display = 'none';
+    endScreen.style.display = 'none';
+    gameScreen.style.display = 'flex';
+    state.isActive = true;
+    loadNextQuestion();
+    startTimer();
+  }
+
+  // ---------- Difficulty ----------
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.totalTime = parseInt(btn.dataset.seconds, 10);
+      state.timeRemaining = state.totalTime;
+      updateHUD();
+    });
+  });
+
+  // ---------- Sound toggle ----------
+  $('sound-toggle').addEventListener('click', () => {
+    state.soundEnabled = !state.soundEnabled;
+    $('sound-toggle').textContent = state.soundEnabled ? '🔊' : '🔇';
+  });
+
+  $('start-btn').addEventListener('click', startGame);
+  $('play-again-btn').addEventListener('click', startGame);
+</script>
+</body>
+</html>
