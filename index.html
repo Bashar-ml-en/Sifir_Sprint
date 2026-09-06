@@ -310,12 +310,12 @@
     dailyMode: false, dailySeed: null
   };
 
-  const \$ = id => document.getElementById(id);
-  const startScreen = \$('start-screen'), gameScreen = \$('game-screen'), endScreen = \$('end-screen');
-  const scoreEl = \$('score'), streakEl = \$('streak'), bestStreakEl = \$('best-streak');
-  const timerEl = \$('timer'), timerBar = \$('timer-bar'), questionText = \$('question-text');
+  const $ = id => document.getElementById(id);
+  const startScreen = $('start-screen'), gameScreen = $('game-screen'), endScreen = $('end-screen');
+  const scoreEl = $('score'), streakEl = $('streak'), bestStreakEl = $('best-streak');
+  const timerEl = $('timer'), timerBar = $('timer-bar'), questionText = $('question-text');
   const answerBtns = document.querySelectorAll('.answer-btn');
-  const finalScore = \$('final-score'), finalStreak = \$('final-streak');
+  const finalScore = $('final-score'), finalStreak = $('final-streak');
 
   let personalBest = { score: 0, streak: 0 };
   try { const s = localStorage.getItem('sifir-pb'); if (s) personalBest = JSON.parse(s); } catch (_) {}
@@ -323,9 +323,9 @@
   try { const t = localStorage.getItem('sifir-theme'); if (t) { document.body.className = document.body.className.replace(/theme-\\w+/g, '').trim() + ' ' + t; } } catch (_) {}
 
   function updateStartPB() {
-    \$('pb-score').textContent = personalBest.score + ' correct';
-    \$('pb-streak').textContent = personalBest.streak + ' streak';
-    \$('pb-motivation').textContent = personalBest.score > 0 ? 'Can you beat your top score today? 🔥' : 'First sprint? Let\'s go! 🚀';
+    $('pb-score').textContent = personalBest.score + ' correct';
+    $('pb-streak').textContent = personalBest.streak + ' streak';
+    $('pb-motivation').textContent = personalBest.score > 0 ? 'Can you beat your top score today? 🔥' : 'First sprint? Let\'s go! 🚀';
   }
   updateStartPB();
 
@@ -457,7 +457,7 @@
   function playPowerup() { playTone(880, 0.1, 'sine'); setTimeout(() => playTone(1100, 0.15, 'sine'), 80); }
 
   function updateFlame(streak) {
-    const el = \$('flame-icon');
+    const el = $('flame-icon');
     if (streak < 3) { el.textContent = ''; return; }
     const sizes = ['🔥', '🔥🔥', '🔥🔥🔥', '🔥🔥🔥🔥'];
     el.textContent = sizes[Math.min(3, Math.floor((streak - 3) / 2))];
@@ -474,7 +474,7 @@
   function grantPowerup() {
     if (state.isBossBattle || !state.isActive) return;
     const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
-    const bar = \$('powerup-bar');
+    const bar = $('powerup-bar');
     const btn = document.createElement('button');
     btn.className = 'px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/30 text-emerald-300 text-xs font-bold transition-all active:scale-90 animate-combo-pop';
     btn.textContent = type.name;
@@ -492,7 +492,7 @@
     btn.textContent = '✓ Active';
     btn.className = 'px-3 py-1 rounded-full border border-emerald-400 bg-emerald-800/50 text-white text-xs font-bold';
     powerupTimer = setTimeout(() => { activePowerup = null; btn.remove(); }, type.duration);
-    setTimeout(() => { const c = \$('powerup-bar').children; for (const ch of c) if (ch !== btn) ch.remove(); }, 200);
+    setTimeout(() => { const c = $('powerup-bar').children; for (const ch of c) if (ch !== btn) ch.remove(); }, 200);
   }
 
   function getScoreMultiplier() {
@@ -518,7 +518,7 @@
       const labels = ['', 'EASY', 'MEDIUM', 'HARD'];
       const colors = ['', 'text-emerald-500', 'text-amber-500', 'text-red-500'];
       const ranges = ['', { min: 2, max: 5 }, { min: 4, max: 9 }, { min: 7, max: 12 }];
-      const ind = \$('phase-indicator');
+      const ind = $('phase-indicator');
       ind.textContent = 'PHASE ' + phase + ' · ' + labels[phase];
       ind.className = 'text-center text-[10px] font-bold uppercase tracking-widest ' + colors[phase] + ' mb-1 transition-colors';
       if (!state.dailyMode) { state.rangeMin = ranges[phase].min; state.rangeMax = ranges[phase].max; }
@@ -526,7 +526,7 @@
   }
 
   function updateFrenzy(timeLeft) {
-    const overlay = \$('frenzy-overlay');
+    const overlay = $('frenzy-overlay');
     if (timeLeft <= 10 && timeLeft > 0) {
       state.frenzyActive = true;
       overlay.classList.remove('hidden');
@@ -545,14 +545,14 @@
     playBossEnter();
     const a = randomInt(12, 20), b = randomInt(12, 20);
     bossResolve = { answer: a * b, text: a + ' \u00d7 ' + b };
-    \$('boss-question').textContent = bossResolve.text;
+    $('boss-question').textContent = bossResolve.text;
     const opts = optionsFor({ answer: bossResolve.answer });
     document.querySelectorAll('.boss-ans').forEach((btn, i) => {
       btn.textContent = opts[i]; btn.dataset.value = opts[i];
       btn.className = 'boss-ans font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white hover:border-amber-400/60 hover:bg-amber-950/30 active:scale-95';
       btn.disabled = false;
     });
-    \$('boss-overlay').classList.remove('hidden');
+    $('boss-overlay').classList.remove('hidden');
     gameScreen.classList.add('animate-shake');
     setTimeout(() => gameScreen.classList.remove('animate-shake'), 300);
   }
@@ -573,7 +573,7 @@
       }
       state.totalAnswered++;
       updateHUD();
-      setTimeout(() => { \$('boss-overlay').classList.add('hidden'); state.isBossBattle = false; state.isTransitioning = false; loadNextQuestion(); }, 400);
+      setTimeout(() => { $('boss-overlay').classList.add('hidden'); state.isBossBattle = false; state.isTransitioning = false; loadNextQuestion(); }, 400);
     });
   });
 
@@ -596,7 +596,7 @@
   }
 
   function showComboPopup(streak) {
-    const popup = \$('combo-popup');
+    const popup = $('combo-popup');
     const msgs = ['Nice!', 'Good!', 'Great!', 'Awesome!', 'On Fire!', 'Unstoppable!', 'Legendary!'];
     const mult = getScoreMultiplier();
     popup.textContent = streak >= 10 ? msgs[Math.min(6, Math.floor(streak / 2))] + ' x' + mult : 'x' + mult;
@@ -674,22 +674,22 @@
   function endRound() {
     state.isActive = false;
     clearInterval(state.timerInterval); state.timerInterval = null;
-    \$('frenzy-overlay').classList.add('hidden');
+    $('frenzy-overlay').classList.add('hidden');
     playEnd();
     const isNewPB = savePersonalBest(state.score, state.bestStreak);
     updateStartPB();
     gameScreen.style.display = 'none';
     finalScore.textContent = state.score;
     finalStreak.textContent = state.bestStreak;
-    \$('final-correct').textContent = state.correctCount;
-    \$('final-wrong').textContent = state.wrongCount;
-    \$('final-accuracy').textContent = state.totalAnswered > 0 ? Math.round((state.correctCount / state.totalAnswered) * 100) + '%' : '0%';
-    \$('new-pb-badge').style.display = isNewPB ? 'block' : 'none';
+    $('final-correct').textContent = state.correctCount;
+    $('final-wrong').textContent = state.wrongCount;
+    $('final-accuracy').textContent = state.totalAnswered > 0 ? Math.round((state.correctCount / state.totalAnswered) * 100) + '%' : '0%';
+    $('new-pb-badge').style.display = isNewPB ? 'block' : 'none';
     const g = getGrade(state.score, state.totalTime);
-    const gradeEl = \$('grade-badge');
+    const gradeEl = $('grade-badge');
     gradeEl.textContent = g.grade;
     gradeEl.className = 'text-5xl font-extrabold mb-3 ' + g.color + ' animate-combo-pop';
-    const shareBtn = \$('share-btn');
+    const shareBtn = $('share-btn');
     if (state.dailyMode) { shareBtn.classList.remove('hidden'); shareBtn.classList.add('flex'); }
     else { shareBtn.classList.add('hidden'); shareBtn.classList.remove('flex'); }
     endScreen.style.display = 'flex';
@@ -705,7 +705,7 @@
     state.isBossBattle = false; state.phase = 1; state.frenzyActive = false;
     state.powerups = []; activePowerup = null;
     if (powerupTimer) { clearTimeout(powerupTimer); powerupTimer = null; }
-    \$('powerup-bar').innerHTML = '';
+    $('powerup-bar').innerHTML = '';
     updateFlame(0);
     if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
     updateHUD();
@@ -729,15 +729,15 @@
 
   function setMode(mode) {
     state.dailyMode = mode === 'daily';
-    const arc = \$('mode-arcade'), daily = \$('mode-daily');
+    const arc = $('mode-arcade'), daily = $('mode-daily');
     [arc, daily].forEach(b => { b.classList.remove('border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow'); b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300'); });
     const active = mode === 'daily' ? daily : arc;
     active.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
     active.classList.add('border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow');
-    \$('mode-label').textContent = mode === 'daily' ? 'Daily Challenge' : 'Arcade Mode';
+    $('mode-label').textContent = mode === 'daily' ? 'Daily Challenge' : 'Arcade Mode';
   }
-  \$('mode-arcade').addEventListener('click', () => setMode('arcade'));
-  \$('mode-daily').addEventListener('click', () => setMode('daily'));
+  $('mode-arcade').addEventListener('click', () => setMode('arcade'));
+  $('mode-daily').addEventListener('click', () => setMode('daily'));
 
   document.querySelectorAll('.range-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -757,7 +757,7 @@
       state.totalTime = parseInt(btn.dataset.seconds, 10);
       state.timeRemaining = state.totalTime;
       const labels = { 120: '120 seconds', 60: '60 seconds', 30: '30 seconds' };
-      \$('time-callout').textContent = labels[state.totalTime] || '60 seconds';
+      $('time-callout').textContent = labels[state.totalTime] || '60 seconds';
       updateHUD();
     });
   });
@@ -774,24 +774,24 @@
     });
   });
 
-  \$('sound-toggle').addEventListener('click', () => {
+  $('sound-toggle').addEventListener('click', () => {
     state.soundEnabled = !state.soundEnabled;
     try { localStorage.setItem('sifir-sound', state.soundEnabled); } catch (_) {}
     applySoundUI();
   });
 
-  \$('reset-pb-btn').addEventListener('click', () => {
+  $('reset-pb-btn').addEventListener('click', () => {
     if (confirm('Reset your personal best score?')) { personalBest = { score: 0, streak: 0 }; try { localStorage.setItem('sifir-pb', JSON.stringify(personalBest)); } catch (_) {} updateStartPB(); }
   });
 
-  \$('share-btn').addEventListener('click', () => {
+  $('share-btn').addEventListener('click', () => {
     const text = 'Sifir Sprint Daily - Score: ' + state.score + ', Streak: ' + state.bestStreak;
     if (navigator.share) { navigator.share({ title: 'Sifir Sprint', text: text, url: 'https://sifir-sprint.vercel.app' }); }
     else { navigator.clipboard.writeText(text); }
   });
 
-  \$('start-btn').addEventListener('click', startGame);
-  \$('play-again-btn').addEventListener('click', startGame);
+  $('start-btn').addEventListener('click', startGame);
+  $('play-again-btn').addEventListener('click', startGame);
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && startScreen.style.display !== 'none') { e.preventDefault(); startGame(); }
