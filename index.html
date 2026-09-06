@@ -18,15 +18,9 @@
           },
           colors: {
             arcade: {
-              bg: '#070A14',
-              surface: '#0F1528',
-              card: 'rgba(20, 28, 52, 0.72)',
-              purple: '#8B5CF6',
-              purpleGlow: '#A855F7',
-              indigo: '#6366F1',
-              violetGlow: '#7C3AED',
-              textMuted: '#94A3B8',
-              textDim: '#64748B',
+              bg: '#070A14', surface: '#0F1528', card: 'rgba(20, 28, 52, 0.72)',
+              purple: '#8B5CF6', purpleGlow: '#A855F7', indigo: '#6366F1',
+              violetGlow: '#7C3AED', textMuted: '#94A3B8', textDim: '#64748B',
             }
           },
           animation: {
@@ -36,107 +30,54 @@
             'drift-math-2': 'drift2 18s linear infinite',
             'drift-math-3': 'drift3 12s linear infinite',
             'drift-math-4': 'drift4 16s linear infinite',
+            'combo-pop': 'comboPop 0.4s ease-out',
+            'shake': 'shake 0.3s ease',
           },
           keyframes: {
-            float: {
-              '0%, 100%': { transform: 'translateY(0px) scale(1)' },
-              '50%': { transform: 'translateY(-6px) scale(1.03)' },
-            },
-            pulseGlow: {
-              '0%, 100%': { opacity: '0.45', transform: 'scale(1)' },
-              '50%': { opacity: '0.8', transform: 'scale(1.08)' },
-            },
-            drift1: {
-              '0%': { transform: 'translateY(110vh) rotate(0deg)', opacity: '0' },
-              '10%': { opacity: '0.14' },
-              '90%': { opacity: '0.14' },
-              '100%': { transform: 'translateY(-10vh) rotate(35deg)', opacity: '0' },
-            },
-            drift2: {
-              '0%': { transform: 'translateY(110vh) rotate(15deg)', opacity: '0' },
-              '15%': { opacity: '0.12' },
-              '85%': { opacity: '0.12' },
-              '100%': { transform: 'translateY(-10vh) rotate(-25deg)', opacity: '0' },
-            },
-            drift3: {
-              '0%': { transform: 'translateY(110vh) rotate(-10deg)', opacity: '0' },
-              '10%': { opacity: '0.15' },
-              '90%': { opacity: '0.15' },
-              '100%': { transform: 'translateY(-10vh) rotate(20deg)', opacity: '0' },
-            },
-            drift4: {
-              '0%': { transform: 'translateY(110vh) rotate(25deg)', opacity: '0' },
-              '20%': { opacity: '0.1' },
-              '80%': { opacity: '0.1' },
-              '100%': { transform: 'translateY(-10vh) rotate(-40deg)', opacity: '0' },
-            }
+            float: { '0%,100%': { transform: 'translateY(0px) scale(1)' }, '50%': { transform: 'translateY(-6px) scale(1.03)' } },
+            pulseGlow: { '0%,100%': { opacity: '0.45', transform: 'scale(1)' }, '50%': { opacity: '0.8', transform: 'scale(1.08)' } },
+            drift1: { '0%': { transform: 'translateY(110vh) rotate(0deg)', opacity: '0' }, '10%': { opacity: '0.14' }, '90%': { opacity: '0.14' }, '100%': { transform: 'translateY(-10vh) rotate(35deg)', opacity: '0' } },
+            drift2: { '0%': { transform: 'translateY(110vh) rotate(15deg)', opacity: '0' }, '15%': { opacity: '0.12' }, '85%': { opacity: '0.12' }, '100%': { transform: 'translateY(-10vh) rotate(-25deg)', opacity: '0' } },
+            drift3: { '0%': { transform: 'translateY(110vh) rotate(-10deg)', opacity: '0' }, '10%': { opacity: '0.15' }, '90%': { opacity: '0.15' }, '100%': { transform: 'translateY(-10vh) rotate(20deg)', opacity: '0' } },
+            drift4: { '0%': { transform: 'translateY(110vh) rotate(25deg)', opacity: '0' }, '20%': { opacity: '0.1' }, '80%': { opacity: '0.1' }, '100%': { transform: 'translateY(-10vh) rotate(-40deg)', opacity: '0' } },
+            comboPop: { '0%': { transform: 'scale(0.5)', opacity: '0' }, '50%': { transform: 'scale(1.3)', opacity: '1' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+            shake: { '0%,100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-4px)' }, '75%': { transform: 'translateX(4px)' } },
           }
         }
       }
     }
   </script>
   <style>
-    @media (prefers-reduced-motion: reduce) {
-      .ambient-element { animation: none !important; }
-    }
-    .neon-border-glow {
-      box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.45), inset 0 0 12px -2px rgba(139, 92, 246, 0.25);
-    }
-    .btn-start-glow {
-      box-shadow: 0 10px 30px -4px rgba(139, 92, 246, 0.55), 0 0 20px 0px rgba(99, 102, 241, 0.35);
-    }
-    .btn-start-glow:hover {
-      box-shadow: 0 14px 38px -4px rgba(139, 92, 246, 0.7), 0 0 26px 2px rgba(168, 85, 247, 0.5);
-    }
-    .btn-start-glow:active {
-      transform: scale(0.96) translateY(1px);
-      box-shadow: 0 6px 18px -2px rgba(139, 92, 246, 0.6);
-    }
-    .glass-card {
-      background: rgba(18, 24, 46, 0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(168, 85, 247, 0.2);
-    }
-
-    .answer-btn {
-      transition: background 0.08s, border-color 0.08s, transform 0.08s;
-    }
+    @media (prefers-reduced-motion: reduce) { .ambient-element { animation: none !important; } }
+    .neon-border-glow { box-shadow: 0 0 20px -3px rgba(168,85,247,0.45), inset 0 0 12px -2px rgba(139,92,246,0.25); }
+    .btn-start-glow { box-shadow: 0 10px 30px -4px rgba(139,92,246,0.55), 0 0 20px 0px rgba(99,102,241,0.35); }
+    .btn-start-glow:hover { box-shadow: 0 14px 38px -4px rgba(139,92,246,0.7), 0 0 26px 2px rgba(168,85,247,0.5); }
+    .btn-start-glow:active { transform: scale(0.96) translateY(1px); box-shadow: 0 6px 18px -2px rgba(139,92,246,0.6); }
+    .glass-card { background: rgba(18,24,46,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(168,85,247,0.2); }
+    .answer-btn { transition: background 0.08s, border-color 0.08s, transform 0.08s; }
     .answer-btn:active:not(:disabled) { transform: scale(0.95); }
-    .answer-btn.correct {
-      background: #166534 !important;
-      border-color: #22c55e !important;
-    }
-    .answer-btn.wrong {
-      background: #991b1b !important;
-      border-color: #ef4444 !important;
-    }
-    #timer-bar {
-      transition: width 0.3s linear, background 0.3s ease;
-    }
-    #timer.warning {
-      color: #f87171 !important;
-      animation: pulse 0.5s ease infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
+    .answer-btn.correct { background: #166534 !important; border-color: #22c55e !important; }
+    .answer-btn.wrong { background: #991b1b !important; border-color: #ef4444 !important; }
+    #timer-bar { transition: width 0.3s linear, background 0.3s ease; }
+    #timer.warning { color: #f87171 !important; animation: pulse 0.5s ease infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
     .screen { animation: fadeIn 0.25s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="h-full bg-[#070A14] text-white font-sans antialiased select-none flex flex-col justify-between items-center overflow-x-hidden relative min-h-screen">
 
-  <!-- Ambient Dynamic Math Background Particles -->
+  <!-- Ambient Background -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
     <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-gradient-to-b from-purple-700/25 via-indigo-900/15 to-transparent rounded-full blur-[90px] animate-pulse-glow"></div>
     <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[380px] h-[380px] bg-gradient-to-t from-violet-900/20 via-indigo-950/10 to-transparent rounded-full blur-[80px]"></div>
-    <div class="ambient-element absolute left-[12%] text-purple-400/20 text-3xl font-mono font-bold animate-drift-math-1" style="animation-delay: 0s;">7 × 8</div>
-    <div class="ambient-element absolute left-[82%] text-indigo-400/20 text-2xl font-mono font-bold animate-drift-math-2" style="animation-delay: 3s;">9 × 6</div>
-    <div class="ambient-element absolute left-[28%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay: 7s;">×</div>
-    <div class="ambient-element absolute left-[70%] text-purple-300/15 text-3xl font-mono font-bold animate-drift-math-4" style="animation-delay: 1.5s;">12 × 12</div>
-    <div class="ambient-element absolute left-[45%] text-indigo-300/15 text-2xl font-mono font-bold animate-drift-math-1" style="animation-delay: 9s;">6 × 7</div>
-    <div class="ambient-element absolute left-[88%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay: 11s;">=</div>
-    <div class="ambient-element absolute left-[8%] text-purple-400/15 text-3xl font-mono font-bold animate-drift-math-2" style="animation-delay: 5s;">4 × 9</div>
+    <div class="ambient-element absolute left-[12%] text-purple-400/20 text-3xl font-mono font-bold animate-drift-math-1" style="animation-delay:0s;">7 × 8</div>
+    <div class="ambient-element absolute left-[82%] text-indigo-400/20 text-2xl font-mono font-bold animate-drift-math-2" style="animation-delay:3s;">9 × 6</div>
+    <div class="ambient-element absolute left-[28%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay:7s;">×</div>
+    <div class="ambient-element absolute left-[70%] text-purple-300/15 text-3xl font-mono font-bold animate-drift-math-4" style="animation-delay:1.5s;">12 × 12</div>
+    <div class="ambient-element absolute left-[45%] text-indigo-300/15 text-2xl font-mono font-bold animate-drift-math-1" style="animation-delay:9s;">6 × 7</div>
+    <div class="ambient-element absolute left-[88%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay:11s;">=</div>
+    <div class="ambient-element absolute left-[8%] text-purple-400/15 text-3xl font-mono font-bold animate-drift-math-2" style="animation-delay:5s;">4 × 9</div>
   </div>
 
   <!-- ==================== START SCREEN ==================== -->
@@ -156,12 +97,9 @@
         <div class="absolute w-20 h-20 bg-purple-500/35 rounded-full blur-xl animate-pulse-glow"></div>
         <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-[#231B47] to-[#131733] border border-purple-400/40 p-3.5 shadow-[0_0_24px_-2px_rgba(168,85,247,0.4)] flex items-center justify-center">
           <svg class="w-9 h-9 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="2" x2="12" y2="5"></line>
-            <path d="M10 2h4"></path>
-            <line x1="19.5" y1="5.5" x2="18" y2="7"></line>
-            <circle cx="12" cy="14" r="8"></circle>
-            <polyline points="12 10 12 14 15 14" stroke="#E9D5FF" stroke-width="2.2"></polyline>
-            <circle cx="12" cy="14" r="1.2" fill="#E9D5FF"></circle>
+            <line x1="12" y1="2" x2="12" y2="5"/><path d="M10 2h4"/><line x1="19.5" y1="5.5" x2="18" y2="7"/>
+            <circle cx="12" cy="14" r="8"/><polyline points="12 10 12 14 15 14" stroke="#E9D5FF" stroke-width="2.2"/>
+            <circle cx="12" cy="14" r="1.2" fill="#E9D5FF"/>
           </svg>
         </div>
       </div>
@@ -173,12 +111,10 @@
       </p>
       <p class="text-xs sm:text-[13px] text-[#64748B] font-normal max-w-[290px] leading-normal mb-6">Wrong answers come back around — so learn as you go.</p>
 
-      <!-- Personal Best (from localStorage) -->
-      <div class="w-full max-w-[340px] glass-card rounded-2xl px-4 py-3 mb-7 flex items-center justify-center gap-2.5 shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+      <!-- Personal Best -->
+      <div class="w-full max-w-[340px] glass-card rounded-2xl px-4 py-3 mb-5 flex items-center justify-center gap-2.5 shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
         <div class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-amber-300 shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.3)]">
-          <svg class="w-4 h-4 fill-amber-400 text-amber-400" viewBox="0 0 24 24">
-            <path d="M6 2h12v4.5A5.5 5.5 0 0 1 12.5 12h-1A5.5 5.5 0 0 1 6 6.5V2zm-4 4a3 3 0 0 0 3 3h1v-4H5a2 2 0 0 0-2 2v-1zm20-1a2 2 0 0 0-2-2h-1v4h1a3 3 0 0 0 3-3v1zm-9 9.5V18h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-3.5a7.48 7.48 0 0 1-5-2.07V15a1 1 0 0 0 2 0v-1.12A7.54 7.54 0 0 0 12 15a7.54 7.54 0 0 0 4-1.12V15a1 1 0 0 0 2 0v-2.57a7.48 7.48 0 0 1-5 2.07z"/>
-          </svg>
+          <svg class="w-4 h-4 fill-amber-400 text-amber-400" viewBox="0 0 24 24"><path d="M6 2h12v4.5A5.5 5.5 0 0 1 12.5 12h-1A5.5 5.5 0 0 1 6 6.5V2zm-4 4a3 3 0 0 0 3 3h1v-4H5a2 2 0 0 0-2 2v-1zm20-1a2 2 0 0 0-2-2h-1v4h1a3 3 0 0 0 3-3v1zm-9 9.5V18h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-3.5a7.48 7.48 0 0 1-5-2.07V15a1 1 0 0 0 2 0v-1.12A7.54 7.54 0 0 0 12 15a7.54 7.54 0 0 0 4-1.12V15a1 1 0 0 0 2 0v-2.57a7.48 7.48 0 0 1-5 2.07z"/></svg>
         </div>
         <div class="text-left leading-tight">
           <div class="text-[13px] font-bold text-purple-200 flex items-center gap-1.5">
@@ -190,63 +126,56 @@
         </div>
       </div>
 
+      <!-- Number Range Selector -->
+      <div class="w-full max-w-[340px] mb-4">
+        <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B] block mb-2">Numbers:</span>
+        <div class="flex gap-1.5 justify-center flex-wrap">
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-purple-400 bg-purple-950/80 text-white font-bold tracking-wide transition-all" data-range="2,5">2-5</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="2,9">2-9</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="6,12">6-12</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="2,12">2-12</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all" data-range="10,20">10-20</button>
+        </div>
+      </div>
+
+      <!-- Timer -->
       <div class="w-full max-w-[330px] flex items-center justify-center gap-2 mb-2.5">
         <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B]">Timer:</span>
       </div>
-
-      <div class="w-full max-w-[330px] grid grid-cols-3 gap-2.5 mb-7" role="radiogroup" aria-label="Quiz Duration Selector">
-        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 hover:bg-purple-950/20 text-xs sm:text-[13px] font-bold tracking-wide transition-all duration-200 active:scale-95" data-seconds="120">2 min</button>
-        <button type="button" class="duration-btn selected px-3 py-2.5 rounded-full border border-purple-400 bg-purple-950/80 text-white font-bold text-xs sm:text-[13px] tracking-wide neon-border-glow shadow-[0_0_15px_-1px_rgba(168,85,247,0.4)] transition-all duration-200 active:scale-95" data-seconds="60">1 min</button>
-        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 hover:bg-purple-950/20 text-xs sm:text-[13px] font-bold tracking-wide transition-all duration-200 active:scale-95" data-seconds="30">30 s</button>
+      <div class="w-full max-w-[330px] grid grid-cols-3 gap-2.5 mb-5" role="radiogroup">
+        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs sm:text-[13px] font-bold tracking-wide transition-all active:scale-95" data-seconds="120">2 min</button>
+        <button type="button" class="duration-btn selected px-3 py-2.5 rounded-full border border-purple-400 bg-purple-950/80 text-white font-bold text-xs sm:text-[13px] tracking-wide neon-border-glow transition-all active:scale-95" data-seconds="60">1 min</button>
+        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs sm:text-[13px] font-bold tracking-wide transition-all active:scale-95" data-seconds="30">30 s</button>
       </div>
 
+      <!-- Start -->
       <div class="w-full max-w-[330px] flex flex-col items-center">
         <button type="button" id="start-btn" class="w-full py-4 px-8 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:via-indigo-500 hover:to-violet-500 text-white font-extrabold text-lg tracking-wide btn-start-glow transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
           <span>Start Sprint</span>
-          <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"></polygon>
-          </svg>
+          <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
         </button>
         <span class="text-[11px] font-medium text-slate-500 mt-2 tracking-wide">Press Space or Tap to Jump In</span>
       </div>
-
-      <!-- Remove Ads -->
-      <div id="remove-ads-section" class="w-full max-w-[330px] mt-4">
-        <button type="button" id="remove-ads-btn" class="w-full py-2.5 px-4 rounded-full border border-amber-500/40 bg-amber-950/20 hover:bg-amber-950/40 text-amber-300 text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <span>Remove Ads</span>
-        </button>
-      </div>
-      <div id="ads-removed-badge" class="w-full max-w-[330px] mt-4" style="display:none;">
-        <div class="py-2.5 px-4 rounded-full bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold text-center flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          <span>Ads Removed ✓</span>
-        </div>
-      </div>
     </div>
 
+    <!-- Sound + Reset PB footer -->
     <footer class="w-full flex items-center justify-center pb-2 pt-4">
-      <div class="flex items-center gap-3">
-        <button type="button" id="sound-toggle" aria-label="Toggle Sound Effects" class="w-11 h-11 rounded-full border border-slate-700/80 bg-slate-900/50 hover:bg-purple-950/40 hover:border-purple-500/60 text-slate-300 hover:text-white transition-all duration-200 flex items-center justify-center active:scale-90 group shadow-sm">
+      <div class="flex items-center gap-4">
+        <button type="button" id="sound-toggle" aria-label="Toggle Sound" class="w-11 h-11 rounded-full border border-slate-700/80 bg-slate-900/50 hover:bg-purple-950/40 hover:border-purple-500/60 text-slate-300 hover:text-white transition-all flex items-center justify-center active:scale-90 group shadow-sm">
           <svg id="sound-on-icon" class="w-5 h-5 text-purple-300 group-hover:drop-shadow-[0_0_6px_rgba(192,132,252,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
           </svg>
           <svg id="sound-off-icon" class="w-5 h-5 text-slate-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <line x1="23" y1="9" x2="17" y2="15"></line>
-            <line x1="17" y1="9" x2="23" y2="15"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
           </svg>
         </button>
-        <span class="text-[12px] font-medium text-slate-400">Sound: <span class="text-purple-300 font-semibold" id="sound-status">ON</span></span>
+        <button type="button" id="reset-pb-btn" class="text-[11px] text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">Reset PB</button>
       </div>
     </footer>
   </div>
 
   <!-- ==================== GAME SCREEN ==================== -->
   <div id="game-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col px-6 py-8 sm:py-10" style="display:none;">
-    <!-- HUD -->
     <div class="w-full flex items-center justify-between gap-2 mb-1">
       <div class="flex gap-2 flex-1">
         <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
@@ -254,10 +183,10 @@
           <span class="block text-xl font-extrabold text-white" id="score">0</span>
         </div>
         <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
-          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Streak</span>
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Combo</span>
           <span class="block text-xl font-extrabold text-amber-300" id="streak">0</span>
         </div>
-        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10 relative overflow-hidden" id="best-panel">
           <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Best</span>
           <span class="block text-xl font-extrabold text-purple-300" id="best-streak">0</span>
         </div>
@@ -267,18 +196,14 @@
         <span class="block text-xl font-extrabold text-[#fbbf24]" id="timer">60</span>
       </div>
     </div>
-
-    <!-- Timer bar -->
     <div class="w-full h-1.5 bg-slate-800/60 rounded-full overflow-hidden mb-6">
-      <div id="timer-bar" class="h-full w-full rounded-full" style="background: linear-gradient(90deg, #6366f1, #8b5cf6);"></div>
+      <div id="timer-bar" class="h-full w-full rounded-full" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);"></div>
     </div>
-
-    <!-- Question -->
-    <div class="flex-1 flex items-center justify-center">
+    <div class="flex-1 flex items-center justify-center relative">
       <p id="question-text" class="text-[3.2rem] sm:text-[3.8rem] font-extrabold text-white tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"></p>
+      <!-- Combo popup -->
+      <div id="combo-popup" class="absolute -top-2 right-4 text-amber-400 font-extrabold text-lg animate-combo-pop hidden pointer-events-none"></div>
     </div>
-
-    <!-- Answer buttons -->
     <div class="w-full grid grid-cols-2 gap-3 mt-auto pb-4">
       <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="0"></button>
       <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="1"></button>
@@ -287,29 +212,20 @@
     </div>
   </div>
 
-  <!-- Ad Banner (shown during gameplay if ads not removed) -->
-  <div id="ad-banner" class="relative z-10 w-full max-w-[430px] mx-auto flex justify-center" style="display:none; min-height: 50px;">
-    <div id="banner-ad-container"></div>
-  </div>
-
   <!-- ==================== END SCREEN ==================== -->
   <div id="end-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col items-center justify-center px-6 py-10 text-center" style="display:none;">
     <div class="relative mb-5 flex items-center justify-center">
       <div class="absolute w-20 h-20 bg-purple-500/35 rounded-full blur-xl animate-pulse-glow"></div>
       <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-[#231B47] to-[#131733] border border-amber-400/40 p-3.5 shadow-[0_0_24px_-2px_rgba(251,191,36,0.4)] flex items-center justify-center">
-        <svg class="w-9 h-9 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 6v6l4 2"></path>
-        </svg>
+        <svg class="w-9 h-9 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
       </div>
     </div>
-
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-1 drop-shadow-[0_2px_12px_rgba(255,255,255,0.18)]">Time's Up!</h1>
-    <p class="text-[15px] font-medium text-[#94A3B8] mb-7">Here's how you performed this round.</p>
+    <p class="text-[15px] font-medium text-[#94A3B8] mb-5">Here's how you performed this round.</p>
 
-    <div class="w-full max-w-[340px] flex gap-3 mb-8">
+    <div class="w-full max-w-[340px] flex gap-3 mb-5">
       <div class="flex-1 glass-card rounded-2xl py-5 px-3 text-center shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
-        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1.5">Final Score</span>
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1.5">Score</span>
         <span class="block text-3xl sm:text-4xl font-extrabold text-white" id="final-score">0</span>
       </div>
       <div class="flex-1 glass-card rounded-2xl py-5 px-3 text-center shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
@@ -318,30 +234,46 @@
       </div>
     </div>
 
+    <!-- Detailed stats -->
+    <div class="w-full max-w-[340px] glass-card rounded-2xl px-4 py-3 mb-6 shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div>
+          <span class="block text-[9px] font-bold uppercase tracking-widest text-[#64748B]">Correct</span>
+          <span class="block text-lg font-extrabold text-emerald-400" id="final-correct">0</span>
+        </div>
+        <div>
+          <span class="block text-[9px] font-bold uppercase tracking-widest text-[#64748B]">Wrong</span>
+          <span class="block text-lg font-extrabold text-red-400" id="final-wrong">0</span>
+        </div>
+        <div>
+          <span class="block text-[9px] font-bold uppercase tracking-widest text-[#64748B]">Accuracy</span>
+          <span class="block text-lg font-extrabold text-purple-300" id="final-accuracy">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- New PB badge -->
+    <div id="new-pb-badge" class="w-full max-w-[330px] mb-4" style="display:none;">
+      <div class="py-2 px-4 rounded-full bg-amber-950/30 border border-amber-500/30 text-amber-300 text-xs font-bold text-center animate-combo-pop flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>New Personal Best!</span>
+      </div>
+    </div>
+
     <button type="button" id="play-again-btn" class="w-full max-w-[330px] py-4 px-8 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:via-indigo-500 hover:to-violet-500 text-white font-extrabold text-lg tracking-wide btn-start-glow transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
       <span>Play Again</span>
-      <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"></polyline>
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-      </svg>
+      <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
     </button>
   </div>
 
 <script>
   // ---------- Game State ----------
   const state = {
-    score: 0,
-    streak: 0,
-    bestStreak: 0,
-    timeRemaining: 60,
-    totalTime: 60,
-    currentQuestion: null,
-    missedQueue: [],
-    previousQuestionText: null,
-    timerInterval: null,
-    isActive: false,
-    isTransitioning: false,
-    soundEnabled: true
+    score: 0, streak: 0, bestStreak: 0, timeRemaining: 60, totalTime: 60,
+    currentQuestion: null, missedQueue: [], previousQuestionText: null,
+    timerInterval: null, isActive: false, isTransitioning: false,
+    soundEnabled: true, rangeMin: 2, rangeMax: 5,
+    correctCount: 0, wrongCount: 0, totalAnswered: 0
   };
 
   const $ = (id) => document.getElementById(id);
@@ -358,32 +290,52 @@
   const finalScore = $('final-score');
   const finalStreak = $('final-streak');
 
-  // Personal best from localStorage
+  // ---------- Persisted settings ----------
   let personalBest = { score: 0, streak: 0 };
   try {
     const saved = localStorage.getItem('sifir-pb');
     if (saved) personalBest = JSON.parse(saved);
   } catch (_) {}
-  $('pb-score').textContent = `${personalBest.score} correct`;
-  $('pb-streak').textContent = `${personalBest.streak} streak`;
-  if (personalBest.score > 0) {
-    $('pb-motivation').textContent = 'Can you beat your top score today? 🔥';
+
+  // Sound preference
+  try {
+    const soundPref = localStorage.getItem('sifir-sound');
+    if (soundPref === 'false') state.soundEnabled = false;
+  } catch (_) {}
+
+  function updateStartPB() {
+    $('pb-score').textContent = `${personalBest.score} correct`;
+    $('pb-streak').textContent = `${personalBest.streak} streak`;
+    $('pb-motivation').textContent = personalBest.score > 0 ? 'Can you beat your top score today? 🔥' : 'First sprint? Let\'s go! 🚀';
   }
+  updateStartPB();
 
   function savePersonalBest(score, streak) {
     if (score > personalBest.score || (score === personalBest.score && streak > personalBest.streak)) {
       personalBest = { score, streak };
       try { localStorage.setItem('sifir-pb', JSON.stringify(personalBest)); } catch (_) {}
+      return true;
+    }
+    return false;
+  }
+
+  // Sound persistence
+  function applySoundUI() {
+    const onIcon = $('sound-on-icon');
+    const offIcon = $('sound-off-icon');
+    if (state.soundEnabled) {
+      onIcon.classList.remove('hidden'); offIcon.classList.add('hidden');
+    } else {
+      onIcon.classList.add('hidden'); offIcon.classList.remove('hidden');
     }
   }
+  applySoundUI();
 
-  function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+  function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
   function generateQuestion() {
-    const a = randomInt(2, 12);
-    const b = randomInt(2, 12);
+    const a = randomInt(state.rangeMin, state.rangeMax);
+    const b = randomInt(state.rangeMin, state.rangeMax);
     return { text: `${a} \u00d7 ${b}`, answer: a * b };
   }
 
@@ -406,14 +358,12 @@
     return arr;
   }
 
-  // ---------- Sound effects (Web Audio) ----------
+  // ---------- Sound effects ----------
   let audioCtx = null;
-
   function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
   }
-
   function playTone(freq, duration, type) {
     if (!state.soundEnabled) return;
     try {
@@ -424,28 +374,20 @@
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.15, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + duration);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
     } catch (_) {}
   }
-
   function playCorrect() {
     playTone(523.25, 0.15, 'sine');
     setTimeout(() => playTone(659.25, 0.15, 'sine'), 80);
     setTimeout(() => playTone(783.99, 0.2, 'sine'), 160);
   }
-
   function playWrong() {
     playTone(200, 0.25, 'sawtooth');
     setTimeout(() => playTone(150, 0.3, 'sawtooth'), 120);
   }
-
-  function playTick() {
-    playTone(880, 0.05, 'square');
-  }
-
+  function playTick() { playTone(880, 0.05, 'square'); }
   function playEnd() {
     playTone(440, 0.2, 'sine');
     setTimeout(() => playTone(350, 0.2, 'sine'), 200);
@@ -454,28 +396,18 @@
 
   function loadNextQuestion() {
     if (!state.isActive) return;
-
     let q;
     const useMissed = state.missedQueue.length >= 3 && Math.random() < 0.4;
-
     if (useMissed) {
       q = state.missedQueue.shift();
-      if (q.text === state.previousQuestionText) {
-        state.missedQueue.push(q);
-        q = state.missedQueue.shift();
-      }
+      if (q.text === state.previousQuestionText) { state.missedQueue.push(q); q = state.missedQueue.shift(); }
     } else {
       let attempts = 0;
-      do {
-        q = generateQuestion();
-        attempts++;
-      } while (q.text === state.previousQuestionText && attempts < 20);
+      do { q = generateQuestion(); attempts++; } while (q.text === state.previousQuestionText && attempts < 20);
     }
-
     state.currentQuestion = q;
     state.previousQuestionText = q.text;
     questionText.textContent = q.text;
-
     const opts = optionsFor(q);
     answerBtns.forEach((btn, i) => {
       btn.textContent = opts[i];
@@ -486,36 +418,42 @@
     state.isTransitioning = false;
   }
 
+  function showComboPopup(streak) {
+    const popup = $('combo-popup');
+    const msgs = ['Nice!', 'Good!', 'Great!', 'Awesome!', 'On Fire!', 'Unstoppable!', 'Legendary!'];
+    popup.textContent = streak >= 10 ? `${msgs[Math.min(6, Math.floor(streak/2))]} x${streak}` : `x${streak}`;
+    popup.classList.remove('hidden');
+    popup.classList.remove('animate-combo-pop');
+    void popup.offsetWidth;
+    popup.classList.add('animate-combo-pop');
+    setTimeout(() => popup.classList.add('hidden'), 500);
+  }
+
   function handleAnswer(e) {
     const btn = e.currentTarget;
     if (state.isTransitioning || !state.isActive || btn.disabled) return;
     state.isTransitioning = true;
     btn.disabled = true;
-
     const selected = parseInt(btn.dataset.value, 10);
     const correct = state.currentQuestion.answer;
     const isCorrect = selected === correct;
-
     if (isCorrect) {
-      btn.classList.remove('border-purple-500/20', 'bg-[#0F1528]', 'hover:border-purple-400/50', 'hover:bg-purple-950/30');
+      btn.classList.remove('border-purple-500/20','bg-[#0F1528]','hover:border-purple-400/50','hover:bg-purple-950/30');
       btn.classList.add('correct');
       playCorrect();
-      state.score++;
-      state.streak++;
+      state.score++; state.streak++; state.correctCount++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      if (state.streak >= 3) showComboPopup(state.streak);
     } else {
-      btn.classList.remove('border-purple-500/20', 'bg-[#0F1528]', 'hover:border-purple-400/50', 'hover:bg-purple-950/30');
+      btn.classList.remove('border-purple-500/20','bg-[#0F1528]','hover:border-purple-400/50','hover:bg-purple-950/30');
       btn.classList.add('wrong');
       playWrong();
-      state.streak = 0;
+      state.streak = 0; state.wrongCount++;
       state.missedQueue.push({ ...state.currentQuestion });
     }
-
+    state.totalAnswered++;
     updateHUD();
-
-    setTimeout(() => {
-      loadNextQuestion();
-    }, 250);
+    setTimeout(loadNextQuestion, 250);
   }
 
   answerBtns.forEach(btn => btn.addEventListener('click', handleAnswer));
@@ -528,11 +466,7 @@
     timerEl.className = state.timeRemaining <= 10 ? 'block text-xl font-extrabold warning' : 'block text-xl font-extrabold text-[#fbbf24]';
     const ratio = state.timeRemaining / state.totalTime;
     timerBar.style.width = `${ratio * 100}%`;
-    timerBar.style.background = ratio <= 1/6
-      ? 'linear-gradient(90deg, #ef4444, #dc2626)'
-      : ratio <= 0.5
-      ? 'linear-gradient(90deg, #f59e0b, #f97316)'
-      : 'linear-gradient(90deg, #6366f1, #8b5cf6)';
+    timerBar.style.background = ratio <= 1/6 ? 'linear-gradient(90deg,#ef4444,#dc2626)' : ratio <= 0.5 ? 'linear-gradient(90deg,#f59e0b,#f97316)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)';
   }
 
   function startTimer() {
@@ -540,9 +474,7 @@
       state.timeRemaining--;
       if (state.timeRemaining <= 10 && state.timeRemaining > 0) playTick();
       updateHUD();
-      if (state.timeRemaining <= 0) {
-        endRound();
-      }
+      if (state.timeRemaining <= 0) endRound();
     }, 1000);
   }
 
@@ -551,27 +483,25 @@
     clearInterval(state.timerInterval);
     state.timerInterval = null;
     playEnd();
-    savePersonalBest(state.score, state.bestStreak);
+    const isNewPB = savePersonalBest(state.score, state.bestStreak);
+    updateStartPB();
     gameScreen.style.display = 'none';
     finalScore.textContent = state.score;
     finalStreak.textContent = state.bestStreak;
+    $('final-correct').textContent = state.correctCount;
+    $('final-wrong').textContent = state.wrongCount;
+    $('final-accuracy').textContent = state.totalAnswered > 0 ? `${Math.round((state.correctCount / state.totalAnswered) * 100)}%` : '0%';
+    $('new-pb-badge').style.display = isNewPB ? 'block' : 'none';
     endScreen.style.display = 'flex';
   }
 
   function resetState() {
-    state.score = 0;
-    state.streak = 0;
-    state.bestStreak = 0;
+    state.score = 0; state.streak = 0; state.bestStreak = 0;
     state.timeRemaining = state.totalTime;
-    state.currentQuestion = null;
-    state.missedQueue = [];
-    state.previousQuestionText = null;
-    state.isActive = false;
-    state.isTransitioning = false;
-    if (state.timerInterval) {
-      clearInterval(state.timerInterval);
-      state.timerInterval = null;
-    }
+    state.currentQuestion = null; state.missedQueue = []; state.previousQuestionText = null;
+    state.isActive = false; state.isTransitioning = false;
+    state.correctCount = 0; state.wrongCount = 0; state.totalAnswered = 0;
+    if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
     updateHUD();
   }
 
@@ -585,15 +515,29 @@
     startTimer();
   }
 
-  // ---------- Difficulty buttons ----------
-  document.querySelectorAll('.duration-btn').forEach(btn => {
+  // ---------- Difficulty: Number range ----------
+  document.querySelectorAll('.range-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.duration-btn').forEach(b => {
-        b.classList.remove('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow', 'shadow-[0_0_15px_-1px_rgba(168,85,247,0.4)]');
+      document.querySelectorAll('.range-btn').forEach(b => {
+        b.classList.remove('border-purple-400', 'bg-purple-950/80', 'text-white');
         b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
       });
       btn.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-      btn.classList.add('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow', 'shadow-[0_0_15px_-1px_rgba(168,85,247,0.4)]');
+      btn.classList.add('border-purple-400', 'bg-purple-950/80', 'text-white');
+      const [min, max] = btn.dataset.range.split(',').map(Number);
+      state.rangeMin = min; state.rangeMax = max;
+    });
+  });
+
+  // ---------- Difficulty: Timer ----------
+  document.querySelectorAll('.duration-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.duration-btn').forEach(b => {
+        b.classList.remove('selected','border-purple-400','bg-purple-950/80','text-white','neon-border-glow');
+        b.classList.add('border-slate-700/80','bg-slate-900/40','text-slate-300');
+      });
+      btn.classList.remove('border-slate-700/80','bg-slate-900/40','text-slate-300');
+      btn.classList.add('selected','border-purple-400','bg-purple-950/80','text-white','neon-border-glow');
       state.totalTime = parseInt(btn.dataset.seconds, 10);
       state.timeRemaining = state.totalTime;
       const labels = { 120: '120 seconds', 60: '60 seconds', 30: '30 seconds' };
@@ -602,22 +546,19 @@
     });
   });
 
-  // ---------- Sound toggle ----------
+  // ---------- Sound toggle (persisted) ----------
   $('sound-toggle').addEventListener('click', () => {
     state.soundEnabled = !state.soundEnabled;
-    const onIcon = $('sound-on-icon');
-    const offIcon = $('sound-off-icon');
-    const status = $('sound-status');
-    if (state.soundEnabled) {
-      onIcon.classList.remove('hidden');
-      offIcon.classList.add('hidden');
-      status.textContent = 'ON';
-      status.className = 'text-purple-300 font-semibold';
-    } else {
-      onIcon.classList.add('hidden');
-      offIcon.classList.remove('hidden');
-      status.textContent = 'OFF';
-      status.className = 'text-slate-500 font-semibold';
+    try { localStorage.setItem('sifir-sound', state.soundEnabled); } catch (_) {}
+    applySoundUI();
+  });
+
+  // ---------- Reset personal best ----------
+  $('reset-pb-btn').addEventListener('click', () => {
+    if (confirm('Reset your personal best score?')) {
+      personalBest = { score: 0, streak: 0 };
+      try { localStorage.setItem('sifir-pb', JSON.stringify(personalBest)); } catch (_) {}
+      updateStartPB();
     }
   });
 
@@ -625,77 +566,6 @@
   $('start-btn').addEventListener('click', startGame);
   $('play-again-btn').addEventListener('click', startGame);
 
-  // ---------- AdMob Integration ----------
-  let adsRemoved = false;
-  try {
-    const saved = localStorage.getItem('sifir-noads');
-    if (saved === 'true') adsRemoved = true;
-  } catch (_) {}
-  if (adsRemoved) {
-    $('remove-ads-section').style.display = 'none';
-    $('ads-removed-badge').style.display = 'block';
-  }
-
-  function showBanner() {
-    if (adsRemoved) return;
-    const container = $('banner-ad-container');
-    if (!container) return;
-    if (typeof AdMob === 'undefined') return;
-    try {
-      AdMob.showBanner({
-        adId: 'ca-app-pub-3940256099942544/6300978111',
-        position: 'bottom',
-        margin: 0
-      });
-    } catch (_) {}
-  }
-
-  function hideBanner() {
-    if (typeof AdMob === 'undefined') return;
-    try { AdMob.hideBanner(); } catch (_) {}
-  }
-
-  // Show banner when game starts, hide when not playing
-  const origStartGame = startGame;
-  startGame = function() {
-    origStartGame();
-    setTimeout(showBanner, 500);
-  };
-  const origEndRound = endRound;
-  endRound = function() {
-    origEndRound();
-    hideBanner();
-  };
-
-  // Remove Ads purchase
-  $('remove-ads-btn').addEventListener('click', async () => {
-    if (typeof AdMob === 'undefined') {
-      alert('Purchase is only available in the Android app.');
-      return;
-    }
-    try {
-      const result = await AdMob.purchase({
-        sku: 'remove_ads',
-        type: 'inapp'
-      });
-      if (result.success) {
-        adsRemoved = true;
-        try { localStorage.setItem('sifir-noads', 'true'); } catch (_) {}
-        $('remove-ads-section').style.display = 'none';
-        $('ads-removed-badge').style.display = 'block';
-        hideBanner();
-      }
-    } catch (_) {
-      alert('Purchase failed. Please try again.');
-    }
-  });
-
-  // Initialize AdMob on load
-  if (typeof AdMob !== 'undefined') {
-    AdMob.initialize();
-  }
-
-  // Space key to start
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && startScreen.style.display !== 'none') {
       e.preventDefault();

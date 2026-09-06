@@ -27,7 +27,6 @@
   },
   "homepage": "https://github.com/Bashar-ml-en/Sifir_Sprint#readme",
   "dependencies": {
-    "@capacitor-community/admob": "^8.1.0",
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1"
