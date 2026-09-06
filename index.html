@@ -1,330 +1,312 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Sifir Sprint</title>
+  <title>Sifir Sprint - Speed Times-Tables Arcade</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            arcade: {
+              bg: '#070A14',
+              surface: '#0F1528',
+              card: 'rgba(20, 28, 52, 0.72)',
+              purple: '#8B5CF6',
+              purpleGlow: '#A855F7',
+              indigo: '#6366F1',
+              violetGlow: '#7C3AED',
+              textMuted: '#94A3B8',
+              textDim: '#64748B',
+            }
+          },
+          animation: {
+            'float-slow': 'float 7s ease-in-out infinite',
+            'pulse-glow': 'pulseGlow 2.8s ease-in-out infinite',
+            'drift-math-1': 'drift1 14s linear infinite',
+            'drift-math-2': 'drift2 18s linear infinite',
+            'drift-math-3': 'drift3 12s linear infinite',
+            'drift-math-4': 'drift4 16s linear infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px) scale(1)' },
+              '50%': { transform: 'translateY(-6px) scale(1.03)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.45', transform: 'scale(1)' },
+              '50%': { opacity: '0.8', transform: 'scale(1.08)' },
+            },
+            drift1: {
+              '0%': { transform: 'translateY(110vh) rotate(0deg)', opacity: '0' },
+              '10%': { opacity: '0.14' },
+              '90%': { opacity: '0.14' },
+              '100%': { transform: 'translateY(-10vh) rotate(35deg)', opacity: '0' },
+            },
+            drift2: {
+              '0%': { transform: 'translateY(110vh) rotate(15deg)', opacity: '0' },
+              '15%': { opacity: '0.12' },
+              '85%': { opacity: '0.12' },
+              '100%': { transform: 'translateY(-10vh) rotate(-25deg)', opacity: '0' },
+            },
+            drift3: {
+              '0%': { transform: 'translateY(110vh) rotate(-10deg)', opacity: '0' },
+              '10%': { opacity: '0.15' },
+              '90%': { opacity: '0.15' },
+              '100%': { transform: 'translateY(-10vh) rotate(20deg)', opacity: '0' },
+            },
+            drift4: {
+              '0%': { transform: 'translateY(110vh) rotate(25deg)', opacity: '0' },
+              '20%': { opacity: '0.1' },
+              '80%': { opacity: '0.1' },
+              '100%': { transform: 'translateY(-10vh) rotate(-40deg)', opacity: '0' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      .ambient-element { animation: none !important; }
+    }
+    .neon-border-glow {
+      box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.45), inset 0 0 12px -2px rgba(139, 92, 246, 0.25);
+    }
+    .btn-start-glow {
+      box-shadow: 0 10px 30px -4px rgba(139, 92, 246, 0.55), 0 0 20px 0px rgba(99, 102, 241, 0.35);
+    }
+    .btn-start-glow:hover {
+      box-shadow: 0 14px 38px -4px rgba(139, 92, 246, 0.7), 0 0 26px 2px rgba(168, 85, 247, 0.5);
+    }
+    .btn-start-glow:active {
+      transform: scale(0.96) translateY(1px);
+      box-shadow: 0 6px 18px -2px rgba(139, 92, 246, 0.6);
+    }
+    .glass-card {
+      background: rgba(18, 24, 46, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .answer-btn {
+      transition: background 0.08s, border-color 0.08s, transform 0.08s;
+    }
+    .answer-btn:active:not(:disabled) { transform: scale(0.95); }
+    .answer-btn.correct {
+      background: #166534 !important;
+      border-color: #22c55e !important;
+    }
+    .answer-btn.wrong {
+      background: #991b1b !important;
+      border-color: #ef4444 !important;
+    }
+    #timer-bar {
+      transition: width 0.3s linear, background 0.3s ease;
+    }
+    #timer.warning {
+      color: #f87171 !important;
+      animation: pulse 0.5s ease infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .screen { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
-<body>
+<body class="h-full bg-[#070A14] text-white font-sans antialiased select-none flex flex-col justify-between items-center overflow-x-hidden relative min-h-screen">
 
-<div id="app">
-  <!-- START SCREEN -->
-  <div id="start-screen" class="screen">
-    <div class="hero-icon">⏱️</div>
-    <h1 class="title">Sifir Sprint</h1>
-    <p class="subtitle">Answer as many times-tables questions as you can in 60 seconds!</p>
-    <p class="subtitle small">Wrong answers come back around — so learn as you go.</p>
-    <div class="difficulty-selector">
-      <label class="diff-label">Timer:</label>
-      <div class="diff-options">
-        <button class="diff-btn" data-seconds="120">2 min</button>
-        <button class="diff-btn selected" data-seconds="60">1 min</button>
-        <button class="diff-btn" data-seconds="30">30 s</button>
-      </div>
-    </div>
-    <button id="start-btn" class="btn primary">Start</button>
-    <button id="sound-toggle" class="btn icon-btn" aria-label="Toggle sound">🔊</button>
+  <!-- Ambient Dynamic Math Background Particles -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+    <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-gradient-to-b from-purple-700/25 via-indigo-900/15 to-transparent rounded-full blur-[90px] animate-pulse-glow"></div>
+    <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[380px] h-[380px] bg-gradient-to-t from-violet-900/20 via-indigo-950/10 to-transparent rounded-full blur-[80px]"></div>
+    <div class="ambient-element absolute left-[12%] text-purple-400/20 text-3xl font-mono font-bold animate-drift-math-1" style="animation-delay: 0s;">7 × 8</div>
+    <div class="ambient-element absolute left-[82%] text-indigo-400/20 text-2xl font-mono font-bold animate-drift-math-2" style="animation-delay: 3s;">9 × 6</div>
+    <div class="ambient-element absolute left-[28%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay: 7s;">×</div>
+    <div class="ambient-element absolute left-[70%] text-purple-300/15 text-3xl font-mono font-bold animate-drift-math-4" style="animation-delay: 1.5s;">12 × 12</div>
+    <div class="ambient-element absolute left-[45%] text-indigo-300/15 text-2xl font-mono font-bold animate-drift-math-1" style="animation-delay: 9s;">6 × 7</div>
+    <div class="ambient-element absolute left-[88%] text-violet-400/15 text-4xl font-mono font-extrabold animate-drift-math-3" style="animation-delay: 11s;">=</div>
+    <div class="ambient-element absolute left-[8%] text-purple-400/15 text-3xl font-mono font-bold animate-drift-math-2" style="animation-delay: 5s;">4 × 9</div>
   </div>
 
-  <!-- GAME SCREEN -->
-  <div id="game-screen" class="screen" style="display:none;">
-    <div id="hud">
-      <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="score">0</span></div>
-      <div class="hud-item"><span class="hud-label">Streak</span><span class="hud-value" id="streak">0</span></div>
-      <div class="hud-item"><span class="hud-label">Best</span><span class="hud-value" id="best-streak">0</span></div>
-      <div class="hud-item timer-item"><span class="hud-label">Time</span><span class="hud-value" id="timer">60</span></div>
+  <!-- ==================== START SCREEN ==================== -->
+  <div id="start-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col justify-between items-center px-6 py-8 sm:py-10 text-center">
+    <div class="w-full flex items-center justify-between pt-2">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/40 border border-purple-500/25 text-[11px] font-semibold text-purple-300 tracking-wider uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+        Arcade Mode
+      </div>
+      <div class="flex items-center gap-1 text-[12px] font-mono font-semibold text-slate-400">
+        <span class="text-purple-400">⚡</span> SPEED QUIZ
+      </div>
     </div>
-    <div id="timer-bar-container"><div id="timer-bar"></div></div>
-    <div id="question-area">
-      <p id="question-text"></p>
+
+    <div class="w-full flex flex-col items-center my-auto py-4">
+      <div class="relative mb-5 flex items-center justify-center animate-float-slow">
+        <div class="absolute w-20 h-20 bg-purple-500/35 rounded-full blur-xl animate-pulse-glow"></div>
+        <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-[#231B47] to-[#131733] border border-purple-400/40 p-3.5 shadow-[0_0_24px_-2px_rgba(168,85,247,0.4)] flex items-center justify-center">
+          <svg class="w-9 h-9 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="2" x2="12" y2="5"></line>
+            <path d="M10 2h4"></path>
+            <line x1="19.5" y1="5.5" x2="18" y2="7"></line>
+            <circle cx="12" cy="14" r="8"></circle>
+            <polyline points="12 10 12 14 15 14" stroke="#E9D5FF" stroke-width="2.2"></polyline>
+            <circle cx="12" cy="14" r="1.2" fill="#E9D5FF"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="text-4xl sm:text-[42px] font-extrabold tracking-tight text-white mb-2 leading-none drop-shadow-[0_2px_12px_rgba(255,255,255,0.18)]">Sifir Sprint</h1>
+
+      <p class="text-[15px] sm:text-base font-medium text-[#94A3B8] max-w-[310px] leading-snug mb-1.5">
+        Answer as many times-tables questions as you can in <span class="text-purple-300 font-semibold underline decoration-purple-500/40 underline-offset-2" id="time-callout">60 seconds</span>!
+      </p>
+      <p class="text-xs sm:text-[13px] text-[#64748B] font-normal max-w-[290px] leading-normal mb-6">Wrong answers come back around — so learn as you go.</p>
+
+      <!-- Personal Best (from localStorage) -->
+      <div class="w-full max-w-[340px] glass-card rounded-2xl px-4 py-3 mb-7 flex items-center justify-center gap-2.5 shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+        <div class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-amber-300 shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.3)]">
+          <svg class="w-4 h-4 fill-amber-400 text-amber-400" viewBox="0 0 24 24">
+            <path d="M6 2h12v4.5A5.5 5.5 0 0 1 12.5 12h-1A5.5 5.5 0 0 1 6 6.5V2zm-4 4a3 3 0 0 0 3 3h1v-4H5a2 2 0 0 0-2 2v-1zm20-1a2 2 0 0 0-2-2h-1v4h1a3 3 0 0 0 3-3v1zm-9 9.5V18h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-3.5a7.48 7.48 0 0 1-5-2.07V15a1 1 0 0 0 2 0v-1.12A7.54 7.54 0 0 0 12 15a7.54 7.54 0 0 0 4-1.12V15a1 1 0 0 0 2 0v-2.57a7.48 7.48 0 0 1-5 2.07z"/>
+          </svg>
+        </div>
+        <div class="text-left leading-tight">
+          <div class="text-[13px] font-bold text-purple-200 flex items-center gap-1.5">
+            <span>Your best: <span class="text-white font-extrabold text-[14px]" id="pb-score">0 correct</span></span>
+            <span class="text-purple-400">·</span>
+            <span class="text-amber-300 font-bold" id="pb-streak">0 streak</span>
+          </div>
+          <p class="text-[11px] font-medium text-purple-300/80 tracking-wide mt-0.5" id="pb-motivation">First sprint? Let's go! 🚀</p>
+        </div>
+      </div>
+
+      <div class="w-full max-w-[330px] flex items-center justify-center gap-2 mb-2.5">
+        <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B]">Timer:</span>
+      </div>
+
+      <div class="w-full max-w-[330px] grid grid-cols-3 gap-2.5 mb-7" role="radiogroup" aria-label="Quiz Duration Selector">
+        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 hover:bg-purple-950/20 text-xs sm:text-[13px] font-bold tracking-wide transition-all duration-200 active:scale-95" data-seconds="120">2 min</button>
+        <button type="button" class="duration-btn selected px-3 py-2.5 rounded-full border border-purple-400 bg-purple-950/80 text-white font-bold text-xs sm:text-[13px] tracking-wide neon-border-glow shadow-[0_0_15px_-1px_rgba(168,85,247,0.4)] transition-all duration-200 active:scale-95" data-seconds="60">1 min</button>
+        <button type="button" class="duration-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 hover:text-white hover:border-purple-500/50 hover:bg-purple-950/20 text-xs sm:text-[13px] font-bold tracking-wide transition-all duration-200 active:scale-95" data-seconds="30">30 s</button>
+      </div>
+
+      <div class="w-full max-w-[330px] flex flex-col items-center">
+        <button type="button" id="start-btn" class="w-full py-4 px-8 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:via-indigo-500 hover:to-violet-500 text-white font-extrabold text-lg tracking-wide btn-start-glow transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+          <span>Start Sprint</span>
+          <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"></polygon>
+          </svg>
+        </button>
+        <span class="text-[11px] font-medium text-slate-500 mt-2 tracking-wide">Press Space or Tap to Jump In</span>
+      </div>
     </div>
-    <div id="answer-buttons">
-      <button class="answer-btn" data-index="0"></button>
-      <button class="answer-btn" data-index="1"></button>
-      <button class="answer-btn" data-index="2"></button>
-      <button class="answer-btn" data-index="3"></button>
+
+    <footer class="w-full flex items-center justify-center pb-2 pt-4">
+      <div class="flex items-center gap-3">
+        <button type="button" id="sound-toggle" aria-label="Toggle Sound Effects" class="w-11 h-11 rounded-full border border-slate-700/80 bg-slate-900/50 hover:bg-purple-950/40 hover:border-purple-500/60 text-slate-300 hover:text-white transition-all duration-200 flex items-center justify-center active:scale-90 group shadow-sm">
+          <svg id="sound-on-icon" class="w-5 h-5 text-purple-300 group-hover:drop-shadow-[0_0_6px_rgba(192,132,252,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="sound-off-icon" class="w-5 h-5 text-slate-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+        <span class="text-[12px] font-medium text-slate-400">Sound: <span class="text-purple-300 font-semibold" id="sound-status">ON</span></span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== GAME SCREEN ==================== -->
+  <div id="game-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col px-6 py-8 sm:py-10" style="display:none;">
+    <!-- HUD -->
+    <div class="w-full flex items-center justify-between gap-2 mb-1">
+      <div class="flex gap-2 flex-1">
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Score</span>
+          <span class="block text-xl font-extrabold text-white" id="score">0</span>
+        </div>
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Streak</span>
+          <span class="block text-xl font-extrabold text-amber-300" id="streak">0</span>
+        </div>
+        <div class="flex-1 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+          <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Best</span>
+          <span class="block text-xl font-extrabold text-purple-300" id="best-streak">0</span>
+        </div>
+      </div>
+      <div class="w-16 bg-[#0F1528]/80 rounded-xl py-2.5 px-2 text-center border border-purple-500/10">
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Time</span>
+        <span class="block text-xl font-extrabold text-[#fbbf24]" id="timer">60</span>
+      </div>
+    </div>
+
+    <!-- Timer bar -->
+    <div class="w-full h-1.5 bg-slate-800/60 rounded-full overflow-hidden mb-6">
+      <div id="timer-bar" class="h-full w-full rounded-full" style="background: linear-gradient(90deg, #6366f1, #8b5cf6);"></div>
+    </div>
+
+    <!-- Question -->
+    <div class="flex-1 flex items-center justify-center">
+      <p id="question-text" class="text-[3.2rem] sm:text-[3.8rem] font-extrabold text-white tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"></p>
+    </div>
+
+    <!-- Answer buttons -->
+    <div class="w-full grid grid-cols-2 gap-3 mt-auto pb-4">
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="0"></button>
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="1"></button>
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="2"></button>
+      <button class="answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]" data-index="3"></button>
     </div>
   </div>
 
-  <!-- END SCREEN -->
-  <div id="end-screen" class="screen" style="display:none;">
-    <div class="hero-icon">🏁</div>
-    <h1 class="title">Time's Up!</h1>
-    <div class="end-stats">
-      <div class="end-stat">
-        <span class="end-stat-label">Final Score</span>
-        <span class="end-stat-value" id="final-score">0</span>
-      </div>
-      <div class="end-stat">
-        <span class="end-stat-label">Best Streak</span>
-        <span class="end-stat-value" id="final-streak">0</span>
+  <!-- ==================== END SCREEN ==================== -->
+  <div id="end-screen" class="screen relative z-10 w-full max-w-[430px] min-h-screen flex flex-col items-center justify-center px-6 py-10 text-center" style="display:none;">
+    <div class="relative mb-5 flex items-center justify-center">
+      <div class="absolute w-20 h-20 bg-purple-500/35 rounded-full blur-xl animate-pulse-glow"></div>
+      <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-[#231B47] to-[#131733] border border-amber-400/40 p-3.5 shadow-[0_0_24px_-2px_rgba(251,191,36,0.4)] flex items-center justify-center">
+        <svg class="w-9 h-9 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 6v6l4 2"></path>
+        </svg>
       </div>
     </div>
-    <button id="play-again-btn" class="btn primary">Play Again</button>
+
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-1 drop-shadow-[0_2px_12px_rgba(255,255,255,0.18)]">Time's Up!</h1>
+    <p class="text-[15px] font-medium text-[#94A3B8] mb-7">Here's how you performed this round.</p>
+
+    <div class="w-full max-w-[340px] flex gap-3 mb-8">
+      <div class="flex-1 glass-card rounded-2xl py-5 px-3 text-center shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1.5">Final Score</span>
+        <span class="block text-3xl sm:text-4xl font-extrabold text-white" id="final-score">0</span>
+      </div>
+      <div class="flex-1 glass-card rounded-2xl py-5 px-3 text-center shadow-[0_8px_24px_-4px_rgba(139,92,246,0.22)]">
+        <span class="block text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1.5">Best Streak</span>
+        <span class="block text-3xl sm:text-4xl font-extrabold text-amber-300" id="final-streak">0</span>
+      </div>
+    </div>
+
+    <button type="button" id="play-again-btn" class="w-full max-w-[330px] py-4 px-8 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:via-indigo-500 hover:to-violet-500 text-white font-extrabold text-lg tracking-wide btn-start-glow transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+      <span>Play Again</span>
+      <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+      </svg>
+    </button>
   </div>
-</div>
-
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-    min-height: 100dvh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
-  #app {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px 16px;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ---------- Screens ---------- */
-  .screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    gap: 20px;
-    animation: fadeIn 0.25s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  .hero-icon { font-size: 3rem; }
-  .title { font-size: 2rem; font-weight: 800; color: #f8fafc; text-align: center; }
-  .subtitle { font-size: 1rem; color: #94a3b8; text-align: center; line-height: 1.5; }
-  .subtitle.small { font-size: 0.85rem; }
-
-  /* ---------- Buttons ---------- */
-  .btn {
-    font-family: inherit;
-    font-size: 1.1rem;
-    font-weight: 700;
-    padding: 16px 48px;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.1s;
-    min-height: 56px;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn.primary {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-  }
-  .btn.primary:hover { box-shadow: 0 6px 28px rgba(99, 102, 241, 0.6); }
-  .btn.icon-btn {
-    background: transparent;
-    border: 2px solid #334155;
-    color: #e2e8f0;
-    font-size: 1.3rem;
-    padding: 12px 16px;
-    border-radius: 14px;
-    min-height: 48px;
-  }
-
-  /* ---------- Difficulty ---------- */
-  .difficulty-selector {
-    width: 100%;
-    text-align: center;
-  }
-  .diff-label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
-    margin-bottom: 8px;
-  }
-  .diff-options {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-  }
-  .diff-btn {
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 10px 20px;
-    border: 2px solid #334155;
-    border-radius: 10px;
-    background: #1e293b;
-    color: #94a3b8;
-    cursor: pointer;
-    transition: all 0.15s;
-    min-height: 42px;
-  }
-  .diff-btn.selected {
-    border-color: #6366f1;
-    background: rgba(99, 102, 241, 0.15);
-    color: #a5b4fc;
-  }
-  .diff-btn:active { transform: scale(0.95); }
-
-  /* ---------- HUD ---------- */
-  #hud {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-    margin-bottom: 4px;
-  }
-  .hud-item {
-    background: #1e293b;
-    border-radius: 12px;
-    padding: 10px 8px;
-    text-align: center;
-  }
-  .hud-label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
-    margin-bottom: 2px;
-  }
-  .hud-value {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #f1f5f9;
-  }
-  .timer-item .hud-value { color: #fbbf24; }
-  #timer.warning { color: #f87171 !important; animation: pulse 0.5s ease infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-  /* ---------- Timer bar ---------- */
-  #timer-bar-container {
-    width: 100%;
-    height: 6px;
-    background: #1e293b;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 12px;
-  }
-  #timer-bar {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    border-radius: 4px;
-    transition: width 0.3s linear;
-  }
-
-  /* ---------- Question ---------- */
-  #question-area {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-  }
-  #question-text {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: #f8fafc;
-    text-align: center;
-    letter-spacing: 0.02em;
-  }
-
-  /* ---------- Answer buttons ---------- */
-  #answer-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-    margin-top: auto;
-    padding-bottom: 8px;
-  }
-  .answer-btn {
-    font-family: inherit;
-    font-size: 1.6rem;
-    font-weight: 700;
-    padding: 20px 12px;
-    min-height: 68px;
-    border: 2px solid #334155;
-    border-radius: 14px;
-    background: #1e293b;
-    color: #e2e8f0;
-    cursor: pointer;
-    transition: background 0.08s, border-color 0.08s, transform 0.08s;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .answer-btn:active { transform: scale(0.95); background: #334155; }
-  .answer-btn:disabled { cursor: default; opacity: 0.7; }
-  .answer-btn.correct {
-    background: #166534 !important;
-    border-color: #22c55e !important;
-    animation: flashCorrect 0.25s ease;
-  }
-  .answer-btn.wrong {
-    background: #991b1b !important;
-    border-color: #ef4444 !important;
-    animation: flashWrong 0.25s ease;
-  }
-  @keyframes flashCorrect {
-    0% { background: #22c55e; }
-    100% { background: #166534; }
-  }
-  @keyframes flashWrong {
-    0% { background: #ef4444; }
-    100% { background: #991b1b; }
-  }
-
-  /* ---------- End screen ---------- */
-  .end-stats {
-    display: flex;
-    gap: 16px;
-    width: 100%;
-  }
-  .end-stat {
-    flex: 1;
-    background: #1e293b;
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-  }
-  .end-stat-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
-    margin-bottom: 6px;
-  }
-  .end-stat-value {
-    display: block;
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #f1f5f9;
-  }
-
-  /* ---------- QOL ---------- */
-  @media (max-width: 380px) {
-    #question-text { font-size: 2.8rem; }
-    .answer-btn { font-size: 1.3rem; min-height: 60px; }
-    .hud-value { font-size: 1.2rem; }
-  }
-  @media (min-height: 800px) {
-    #question-text { font-size: 4rem; }
-    .answer-btn { min-height: 76px; }
-  }
-</style>
 
 <script>
   // ---------- Game State ----------
@@ -356,6 +338,25 @@
   const answerBtns = document.querySelectorAll('.answer-btn');
   const finalScore = $('final-score');
   const finalStreak = $('final-streak');
+
+  // Personal best from localStorage
+  let personalBest = { score: 0, streak: 0 };
+  try {
+    const saved = localStorage.getItem('sifir-pb');
+    if (saved) personalBest = JSON.parse(saved);
+  } catch (_) {}
+  $('pb-score').textContent = `${personalBest.score} correct`;
+  $('pb-streak').textContent = `${personalBest.streak} streak`;
+  if (personalBest.score > 0) {
+    $('pb-motivation').textContent = 'Can you beat your top score today? 🔥';
+  }
+
+  function savePersonalBest(score, streak) {
+    if (score > personalBest.score || (score === personalBest.score && streak > personalBest.streak)) {
+      personalBest = { score, streak };
+      try { localStorage.setItem('sifir-pb', JSON.stringify(personalBest)); } catch (_) {}
+    }
+  }
 
   function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -460,7 +461,7 @@
     answerBtns.forEach((btn, i) => {
       btn.textContent = opts[i];
       btn.dataset.value = opts[i];
-      btn.className = 'answer-btn';
+      btn.className = 'answer-btn font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white hover:border-purple-400/50 hover:bg-purple-950/30 active:scale-95 disabled:opacity-60 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]';
       btn.disabled = false;
     });
     state.isTransitioning = false;
@@ -477,12 +478,14 @@
     const isCorrect = selected === correct;
 
     if (isCorrect) {
+      btn.classList.remove('border-purple-500/20', 'bg-[#0F1528]', 'hover:border-purple-400/50', 'hover:bg-purple-950/30');
       btn.classList.add('correct');
       playCorrect();
       state.score++;
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
     } else {
+      btn.classList.remove('border-purple-500/20', 'bg-[#0F1528]', 'hover:border-purple-400/50', 'hover:bg-purple-950/30');
       btn.classList.add('wrong');
       playWrong();
       state.streak = 0;
@@ -503,7 +506,7 @@
     streakEl.textContent = state.streak;
     bestStreakEl.textContent = state.bestStreak;
     timerEl.textContent = state.timeRemaining;
-    timerEl.className = state.timeRemaining <= 10 ? 'warning' : '';
+    timerEl.className = state.timeRemaining <= 10 ? 'block text-xl font-extrabold warning' : 'block text-xl font-extrabold text-[#fbbf24]';
     const ratio = state.timeRemaining / state.totalTime;
     timerBar.style.width = `${ratio * 100}%`;
     timerBar.style.background = ratio <= 1/6
@@ -529,6 +532,7 @@
     clearInterval(state.timerInterval);
     state.timerInterval = null;
     playEnd();
+    savePersonalBest(state.score, state.bestStreak);
     gameScreen.style.display = 'none';
     finalScore.textContent = state.score;
     finalStreak.textContent = state.bestStreak;
@@ -562,13 +566,19 @@
     startTimer();
   }
 
-  // ---------- Difficulty ----------
-  document.querySelectorAll('.diff-btn').forEach(btn => {
+  // ---------- Difficulty buttons ----------
+  document.querySelectorAll('.duration-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
+      document.querySelectorAll('.duration-btn').forEach(b => {
+        b.classList.remove('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow', 'shadow-[0_0_15px_-1px_rgba(168,85,247,0.4)]');
+        b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
+      });
+      btn.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
+      btn.classList.add('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white', 'neon-border-glow', 'shadow-[0_0_15px_-1px_rgba(168,85,247,0.4)]');
       state.totalTime = parseInt(btn.dataset.seconds, 10);
       state.timeRemaining = state.totalTime;
+      const labels = { 120: '120 seconds', 60: '60 seconds', 30: '30 seconds' };
+      $('time-callout').textContent = labels[state.totalTime] || '60 seconds';
       updateHUD();
     });
   });
@@ -576,11 +586,33 @@
   // ---------- Sound toggle ----------
   $('sound-toggle').addEventListener('click', () => {
     state.soundEnabled = !state.soundEnabled;
-    $('sound-toggle').textContent = state.soundEnabled ? '🔊' : '🔇';
+    const onIcon = $('sound-on-icon');
+    const offIcon = $('sound-off-icon');
+    const status = $('sound-status');
+    if (state.soundEnabled) {
+      onIcon.classList.remove('hidden');
+      offIcon.classList.add('hidden');
+      status.textContent = 'ON';
+      status.className = 'text-purple-300 font-semibold';
+    } else {
+      onIcon.classList.add('hidden');
+      offIcon.classList.remove('hidden');
+      status.textContent = 'OFF';
+      status.className = 'text-slate-500 font-semibold';
+    }
   });
 
+  // ---------- Start / Play Again ----------
   $('start-btn').addEventListener('click', startGame);
   $('play-again-btn').addEventListener('click', startGame);
+
+  // Space key to start
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && startScreen.style.display !== 'none') {
+      e.preventDefault();
+      startGame();
+    }
+  });
 </script>
 </body>
 </html>
