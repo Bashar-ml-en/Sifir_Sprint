@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sifir Sprint</string>
+    <string name="title_activity_main">Sifir Sprint</string>
+    <string name="package_name">com.sifir.sprint</string>
+    <string name="custom_url_scheme">com.sifir.sprint</string>
+</resources>

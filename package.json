@@ -1,0 +1,27 @@
+{
+  "name": "sifir-sprint",
+  "version": "1.0.0",
+  "description": "Sifir Sprint - 60-second times-tables arcade quiz game (Android + Web)",
+  "private": true,
+  "scripts": {
+    "build:web": "node -e \"require('fs').cpSync('index.html', 'dist/index.html')\"",
+    "build:android": "npx cap sync android",
+    "build": "npm run build:web && npm run build:android",
+    "open:android": "npx cap open android",
+    "deploy:web": "npx vercel --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bashar-ml-en/Sifir_Sprint.git"
+  },
+  "keywords": ["times-tables", "quiz", "arcade", "education", "android", "capacitor"],
+  "bugs": {
+    "url": "https://github.com/Bashar-ml-en/Sifir_Sprint/issues"
+  },
+  "homepage": "https://github.com/Bashar-ml-en/Sifir_Sprint#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1"
+  }
+}
