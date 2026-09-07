@@ -38,10 +38,11 @@
     .btn-glow { box-shadow: 0 10px 30px -4px rgba(139,92,246,0.55), 0 0 20px 0px rgba(99,102,241,0.35); }
     .btn-glow:active { transform: scale(0.96); box-shadow: 0 6px 18px -2px rgba(139,92,246,0.6); }
     .glass { background: rgba(18,24,46,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(168,85,247,0.2); }
-    .ab, .ba { transition: background 0.08s, border-color 0.08s, transform 0.08s; }
+    .ab, .ba { transition: background 0.08s, border-color 0.08s, transform 0.08s; background:#0F1528; border:2px solid rgba(139,92,246,0.2); border-radius:16px; color:white; font-size:1.25rem; font-weight:700; padding:20px 16px; line-height:1; }
     .ab:active:not(:disabled), .ba:active:not(:disabled) { transform: scale(0.95); }
     .ab.correct, .ba.correct { background: #166534 !important; border-color: #22c55e !important; }
     .ab.wrong, .ba.wrong { background: #991b1b !important; border-color: #ef4444 !important; }
+    .ab:disabled { opacity:0.6; cursor:default; }
     #tbar { transition: width 0.3s linear, background 0.3s ease; }
     #timer.warning { color: #f87171 !important; animation: pulse 0.5s ease infinite; }
     @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -108,12 +109,22 @@
 
     <div class="w-full max-w-[340px] mb-3">
       <span class="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#64748B] block mb-2">Numbers:</span>
-      <div class="flex gap-1.5 justify-center flex-wrap">
-        <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-purple-400 bg-purple-950/80 text-white font-bold" data-r="2,5">2-5</button>
-        <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="2,9">2-9</button>
-        <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="6,12">6-12</button>
-        <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="2,12">2-12</button>
-        <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="10,20">10-20</button>
+      <div id="range-container" class="flex flex-col items-center gap-1.5">
+        <div class="flex gap-1.5 justify-center flex-wrap">
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-purple-400 bg-purple-950/80 text-white font-bold" data-r="1,10">1-10</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="10,20">10-20</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="20,30">20-30</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="30,40">30-40</button>
+        </div>
+        <div id="more-ranges" class="flex gap-1.5 justify-center flex-wrap" style="display:none;">
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="40,50">40-50</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="50,60">50-60</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="60,70">60-70</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="70,80">70-80</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="80,90">80-90</button>
+          <button class="range-btn text-[11px] py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300" data-r="90,100">90-100</button>
+        </div>
+        <button id="more-ranges-btn" class="text-[10px] text-[#64748B] hover:text-purple-300 transition-colors underline underline-offset-2">+ more ranges</button>
       </div>
     </div>
 
