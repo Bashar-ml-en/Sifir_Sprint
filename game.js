@@ -7,7 +7,8 @@ var state = {
   soundOn: true, rMin: 2, rMax: 5,
   ok: 0, bad: 0, total: 0,
   isBoss: false, phase: 1, frenzy: false,
-  daily: false, seed: null
+  daily: false, seed: null,
+  puzzleActive: false, puzzleType: null
 };
 
 var asked = {};
@@ -27,7 +28,6 @@ function seededRng(seed) {
   return function() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 }
 var rng = Math.random;
-
 function rand(min, max) { return Math.floor(rng() * (max - min + 1)) + min; }
 
 function buildPool(min, max) {
@@ -40,10 +40,7 @@ function buildPool(min, max) {
   }
   return shuffle(pool);
 }
-
-function rebuildPool() {
-  questionPool = shuffle(buildPool(state.rMin, state.rMax));
-}
+function rebuildPool() { questionPool = shuffle(buildPool(state.rMin, state.rMax)); }
 rebuildPool();
 
 function draw() {
@@ -63,7 +60,7 @@ var actx = null;
 function ctx() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); return actx; }
 function tone(f, d, t) {
   if (!state.soundOn) return;
-  try { var c = ctx(), o = c.createOscillator(), g = c.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime); o.stop(c.currentTime + d); } catch (e) { console.log('tone error', e); }
+  try { var c = ctx(), o = c.createOscillator(), g = c.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime); o.stop(c.currentTime + d); } catch (e) {}
 }
 function sc() { tone(523, 0.15); setTimeout(function() { tone(659, 0.15); }, 80); setTimeout(function() { tone(784, 0.2); }, 160); }
 function sw() { tone(200, 0.25, 'sawtooth'); setTimeout(function() { tone(150, 0.3, 'sawtooth'); }, 120); }
@@ -71,6 +68,7 @@ function st() { tone(880, 0.05, 'square'); }
 function se() { tone(440, 0.2); setTimeout(function() { tone(350, 0.2); }, 200); setTimeout(function() { tone(260, 0.4); }, 400); }
 function sb() { tone(330, 0.2, 'sawtooth'); setTimeout(function() { tone(440, 0.2, 'sawtooth'); }, 150); setTimeout(function() { tone(550, 0.3, 'sawtooth'); }, 300); }
 function sp() { tone(880, 0.1); setTimeout(function() { tone(1100, 0.15); }, 80); }
+function spuzzle() { tone(660, 0.1, 'triangle'); setTimeout(function() { tone(880, 0.15, 'triangle'); }, 100); }
 
 var pb = { score: 0, streak: 0 };
 try { var s = localStorage.getItem('sifir-pb'); if (s) pb = JSON.parse(s); } catch (e) {}
@@ -139,6 +137,96 @@ function updFrenzy(t) {
   else { state.frenzy = false; if (ov) ov.style.display = 'none'; }
 }
 
+// ============ PUZZLE ENGINE ============
+var PUZZLE_TYPES = [
+  {
+    // Fill the missing factor: _ x 7 = 42
+    gen: function(rMin, rMax) {
+      var a = rand(rMin, rMax), b = rand(rMin, rMax);
+      var product = a * b;
+      if (Math.random() < 0.5) return { q: '? x ' + b + ' = ' + product, a: a, hint: 'What times ' + b + ' equals ' + product + '?' };
+      else return { q: a + ' x ? = ' + product, a: b, hint: a + ' times what equals ' + product + '?' };
+    },
+    label: 'FILL IN'
+  },
+  {
+    // Sequence: find the next number in pattern
+    gen: function(rMin, rMax) {
+      var a = rand(rMin, rMax), step = rand(1, Math.max(1, Math.floor((rMax - rMin) / 2)));
+      var seq = [a, a + step, a + 2 * step];
+      return { q: seq.join(', ') + ', ?', a: a + 3 * step, hint: 'Pattern: add ' + step + ' each time' };
+    },
+    label: 'SEQUENCE'
+  },
+  {
+    // Which is larger? 
+    gen: function(rMin, rMax) {
+      var a = rand(rMin, rMax), b = rand(rMin, rMax);
+      while (b === a) b = rand(rMin, rMax);
+      var opts = shuffle([a, b]);
+      var displayA = rand(1, 10) * a, displayB = rand(1, 10) * b;
+      return { q: 'Which product is larger?\n' + a + ' x ' + rand(1, 10) + '  vs  ' + b + ' x ' + rand(1, 10), a: a > b ? a : b, hint: 'Compare ' + a + ' and ' + b, opts: [a, b] };
+    },
+    label: 'COMPARE'
+  },
+  {
+    // Division reverse: 56 / 7 = ?
+    gen: function(rMin, rMax) {
+      var a = rand(rMin, rMax), b = rand(rMin, rMax);
+      return { q: (a * b) + ' / ' + a + ' = ?', a: b, hint: 'Think: what times ' + a + ' equals ' + (a * b) + '?' };
+    },
+    label: 'REVERSE'
+  },
+  {
+    // Double or half: number then double/half it
+    gen: function(rMin, rMax) {
+      var a = rand(rMin, rMax);
+      if (Math.random() < 0.5) return { q: 'Double ' + a + ' = ?', a: a * 2, hint: 'Two times ' + a };
+      else return { q: 'Half of ' + (a * 2) + ' = ?', a: a, hint: (a * 2) + ' divided by 2' };
+    },
+    label: 'DOUBLE'
+  },
+  {
+    // Square: ? x ? = number
+    gen: function(rMin, rMax) {
+      var a = rand(Math.max(1, rMin), Math.min(12, rMax));
+      return { q: a + ' x ' + a + ' = ?', a: a * a, hint: 'Square of ' + a };
+    },
+    label: 'SQUARE'
+  },
+  {
+    // Inequality: choose symbol between two products
+    gen: function(rMin, rMax) {
+      var a = rand(rMin, rMax), b = rand(rMin, rMax);
+      var c = rand(rMin, rMax), d = rand(rMin, rMax);
+      var p1 = a * b, p2 = c * d;
+      var answer = '=';
+      if (p1 > p2) answer = '>';
+      else if (p1 < p2) answer = '<';
+      return { q: a + ' x ' + b + ' ? ' + c + ' x ' + d, a: answer, hint: 'Which side is bigger?', isSymbol: true };
+    },
+    label: 'INEQUALITY'
+  },
+  {
+    // Nearest round: round to nearest 10
+    gen: function(rMin, rMax) {
+      var a = rand(rMin * 10, rMax * 10);
+      var nearest = Math.round(a / 10) * 10;
+      return { q: 'Round ' + a + ' to nearest 10', a: nearest, hint: 'Is ' + a + ' closer to ' + (nearest - 10) + ' or ' + nearest + '?' };
+    },
+    label: 'ROUND'
+  }
+];
+
+function genPuzzle() {
+  var type = PUZZLE_TYPES[rand(0, PUZZLE_TYPES.length - 1)];
+  var p = type.gen(state.rMin, state.rMax);
+  p.typeLabel = type.label;
+  p.isPuzzle = true;
+  return p;
+}
+
+// ============ CORE ============
 function hud() {
   var el = $('score'); if (el) el.textContent = state.score + '';
   el = $('streak'); if (el) el.textContent = state.streak + '';
@@ -151,9 +239,7 @@ function hud() {
   updFrenzy(state.timeRemaining);
 }
 
-function nextQ() {
-  if (!state.active) { state.busy = false; return; }
-  if (state.isBoss) { state.busy = false; return; }
+function loadRegularQuestion() {
   var q;
   var useMissed = state.missed.length >= 3 && Math.random() < 0.4;
   if (useMissed) {
@@ -163,22 +249,81 @@ function nextQ() {
     var att = 0;
     do { q = draw(); att++; } while (q.q === state.prev && att < 50);
   }
+  return q;
+}
+
+function showQuestion(q) {
   state.current = q;
   state.prev = q.q;
-  var qt = $('qt'); if (qt) qt.textContent = q.q;
-  var os = new Set(); os.add(q.a);
-  while (os.size < 4) { var off = rand(1, 6) * (Math.random() < 0.5 ? 1 : -1); var v = q.a + off; if (v >= 0) os.add(v); }
-  var fa = shuffle(Array.from(os));
+  var qt = $('qt');
+  // For puzzles with multi-line text, use innerHTML
+  if (q.isPuzzle) {
+    var lines = q.q.split('\n');
+    qt.innerHTML = '';
+    for (var li = 0; li < lines.length; li++) {
+      var span = document.createElement('div');
+      span.textContent = lines[li];
+      qt.appendChild(span);
+    }
+  } else {
+    qt.innerHTML = '';
+    qt.textContent = q.q;
+  }
+  
+  // Generate options
   var abs = $$('.ab');
-  for (var i = 0; i < abs.length; i++) {
-    abs[i].innerHTML = fa[i] + '';
-    abs[i].setAttribute('dv', fa[i] + '');
-    abs[i].disabled = false;
-    abs[i].className = 'ab';
+  var answer = q.a;
+  var useSymbols = q.isSymbol;
+  
+  if (useSymbols) {
+    // For inequality: show >, <, = as options
+    var syms = ['>', '<', '='];
+    var opts = shuffle(syms);
+    for (var i = 0; i < abs.length && i < 3; i++) {
+      abs[i].innerHTML = opts[i];
+      abs[i].setAttribute('dv', opts[i]);
+      abs[i].disabled = false;
+      abs[i].className = 'ab';
+    }
+    abs[3].style.display = 'none';
+  } else {
+    abs[3].style.display = '';
+    var os = new Set(); os.add(answer);
+    while (os.size < 4) {
+      var off = rand(1, Math.max(2, Math.floor(answer * 0.3) + 1)) * (Math.random() < 0.5 ? 1 : -1);
+      var v = answer + off;
+      if (v >= 0 && !isNaN(v)) os.add(v);
+    }
+    var fa = shuffle(Array.from(os));
+    for (var i = 0; i < abs.length; i++) {
+      abs[i].innerHTML = fa[i] + '';
+      abs[i].setAttribute('dv', fa[i] + '');
+      abs[i].disabled = false;
+      abs[i].className = 'ab';
+    }
   }
   state.busy = false;
 }
 
+function nextQ() {
+  if (!state.active) { state.busy = false; return; }
+  if (state.isBoss) { state.busy = false; return; }
+  
+  // 20% chance of puzzle question (but not back-to-back puzzles)
+  var usePuzzle = !state.puzzleActive && Math.random() < 0.2 && state.total > 0;
+  var q;
+  if (usePuzzle) {
+    q = genPuzzle();
+    state.puzzleActive = true;
+    state.puzzleType = q.typeLabel;
+  } else {
+    state.puzzleActive = false;
+    q = loadRegularQuestion();
+  }
+  showQuestion(q);
+}
+
+// Answer buttons
 var abs = $$('.ab');
 for (var i = 0; i < abs.length; i++) {
   abs[i].onclick = function() {
@@ -187,14 +332,23 @@ for (var i = 0; i < abs.length; i++) {
       state.busy = true;
       var v = this.getAttribute('dv');
       if (!v) { state.busy = false; return; }
-      var sel = parseInt(v, 10);
-      if (isNaN(sel)) { state.busy = false; return; }
       var q = state.current;
       if (!q) { state.busy = false; return; }
-      var ok = sel === q.a;
+      
+      // Compare answer
+      var actualAnswer = '' + q.a;
+      var givenAnswer = '' + v;
+      // For numbers, compare parsed
+      var ok;
+      if (q.isSymbol) {
+        ok = givenAnswer === actualAnswer;
+      } else {
+        ok = parseInt(v, 10) === q.a;
+      }
+      
       if (ok) {
         sc();
-        var pts = calcPoints();
+        var pts = q.isPuzzle ? calcPoints() + 2 : calcPoints(); // Puzzle bonus +2
         state.score += pts;
         state.streak++;
         state.ok++;
@@ -211,16 +365,35 @@ for (var i = 0; i < abs.length; i++) {
         state.bad++;
         this.className = 'ab wrong';
         flame(0);
-        state.missed.push({ q: q.q, a: q.a });
+        if (!q.isPuzzle) state.missed.push({ q: q.q, a: q.a });
+        // Show correct answer briefly
+        var correctEl = document.createElement('div');
+        correctEl.style.cssText = 'color:#22c55e;font-size:14px;font-weight:bold;text-align:center;margin-top:8px;';
+        correctEl.textContent = 'Answer: ' + q.a;
+        var parent = $('qt');
+        if (parent) {
+          var oldEl = parent.querySelector('.answer-reveal');
+          if (oldEl) oldEl.remove();
+          correctEl.className = 'answer-reveal';
+          parent.appendChild(correctEl);
+          setTimeout(function() { correctEl.remove(); }, 1200);
+        }
       }
       state.total++;
+      state.puzzleActive = false;
       hud();
       var self = this;
-      setTimeout(function() { self.className = 'ab'; nextQ(); }, 300);
+      setTimeout(function() { 
+        self.className = 'ab'; 
+        var cr = document.querySelector('.answer-reveal');
+        if (cr) cr.remove();
+        nextQ(); 
+      }, 500);
     } catch (e) { console.log('click err', e); state.busy = false; }
   };
 }
 
+// Boss buttons
 function bossTrigger() {
   state.isBoss = true; sb();
   var a = rand(12, 20), b = rand(12, 20);
@@ -312,6 +485,7 @@ function reset() {
   state.active = false; state.busy = false;
   state.ok = 0; state.bad = 0; state.total = 0;
   state.isBoss = false; state.phase = 1; state.frenzy = false;
+  state.puzzleActive = false; state.puzzleType = null;
   activePU = null;
   if (puTimer) { clearInterval(puTimer); puTimer = null; }
   var pu = $('pu-bar'); if (pu) pu.innerHTML = '';
@@ -328,6 +502,12 @@ function start() {
   var endEl = $('end'); if (endEl) endEl.style.display = 'none';
   var game = $('game'); if (game) game.style.display = 'flex';
   state.active = true;
+  // Show puzzle type in phase line
+  var ph = $('phase');
+  if (ph) {
+    ph.textContent = 'READY';
+    ph.style.color = '#a78bfa';
+  }
   nextQ();
   tick();
 }
@@ -360,7 +540,6 @@ for (var i = 0; i < rbs.length; i++) {
   };
 }
 
-// More ranges toggle
 var moreBtn = $('more-ranges-btn');
 var moreRanges = $('more-ranges');
 if (moreBtn && moreRanges) {
@@ -368,7 +547,6 @@ if (moreBtn && moreRanges) {
     var hidden = moreRanges.style.display === 'none' || moreRanges.style.display === '';
     moreRanges.style.display = hidden ? 'flex' : 'none';
     moreBtn.textContent = hidden ? '- less ranges' : '+ more ranges';
-    // Re-bind onclick for newly visible range buttons
     var extras = moreRanges.querySelectorAll('.range-btn');
     for (var k = 0; k < extras.length; k++) {
       extras[k].onclick = function() {
