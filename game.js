@@ -11,7 +11,7 @@ var state = {
 };
 
 var asked = {};
-var pool1 = [], pool2 = [], pool3 = [];
+var questionPool = [];
 var activePU = null, puTimer = null;
 var bossAns = null;
 
@@ -41,30 +41,22 @@ function buildPool(min, max) {
   return shuffle(pool);
 }
 
-function initPools() {
-  pool1 = shuffle(buildPool(2, 5));
-  pool2 = shuffle(buildPool(4, 9));
-  pool3 = shuffle(buildPool(7, 12));
+function rebuildPool() {
+  questionPool = shuffle(buildPool(state.rMin, state.rMax));
 }
-initPools();
+rebuildPool();
 
-function draw(phase) {
-  var pools = { 1: pool1, 2: pool2, 3: pool3 };
-  var p = pools[phase] || pool1;
-  if (p.length === 0) {
-    var r = { 1: [2, 5], 2: [4, 9], 3: [7, 12] };
-    var mn = r[phase][0], mx = r[phase][1];
-    p = shuffle(buildPool(mn, mx));
-    if (phase === 1) pool1 = p; else if (phase === 2) pool2 = p; else pool3 = p;
-  }
-  for (var i = 0; i < p.length; i++) {
-    var key = p[i].q;
-    if (!asked[key]) { asked[key] = true; return p.splice(i, 1)[0]; }
+function draw() {
+  if (questionPool.length === 0) rebuildPool();
+  for (var i = 0; i < questionPool.length; i++) {
+    var key = questionPool[i].q;
+    if (!asked[key]) { asked[key] = true; return questionPool.splice(i, 1)[0]; }
   }
   asked = {};
-  if (p.length > 0) { asked[p[0].q] = true; return p.splice(0, 1)[0]; }
-  var a = rand(state.rMin, state.rMax), b = rand(state.rMin, state.rMax);
-  return { q: a + ' x ' + b, a: a * b };
+  if (questionPool.length > 0) { asked[questionPool[0].q] = true; return questionPool.splice(0, 1)[0]; }
+  rebuildPool();
+  if (questionPool.length > 0) { asked[questionPool[0].q] = true; return questionPool.splice(0, 1)[0]; }
+  return { q: rand(state.rMin, state.rMax) + ' x ' + rand(state.rMin, state.rMax), a: a * b };
 }
 
 var actx = null;
@@ -125,10 +117,8 @@ function updPhase(t, total) {
   var ph = getPhase(t, total);
   if (ph !== state.phase) {
     state.phase = ph;
-    asked = {};
     var el = $('phase');
     if (el) { el.textContent = 'PHASE ' + ph; el.style.color = ['', '#22c55e', '#f59e0b', '#ef4444'][ph]; }
-    if (!state.daily) { var ranges = ['', { mn: 2, mx: 5 }, { mn: 4, mx: 9 }, { mn: 7, mx: 12 }]; state.rMin = ranges[ph].mn; state.rMax = ranges[ph].mx; }
   }
 }
 
@@ -160,7 +150,7 @@ function nextQ() {
     if (q.q === state.prev) { state.missed.push(q); q = state.missed.shift(); }
   } else {
     var att = 0;
-    do { q = draw(state.phase); att++; } while (q.q === state.prev && att < 50);
+    do { q = draw(); att++; } while (q.q === state.prev && att < 50);
   }
   state.current = q;
   state.prev = q.q;
@@ -313,7 +303,7 @@ function reset() {
   activePU = null;
   if (puTimer) { clearInterval(puTimer); puTimer = null; }
   var pu = $('pu-bar'); if (pu) pu.innerHTML = '';
-  flame(0); asked = {};
+  flame(0); asked = {}; rebuildPool();
   if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
   hud();
 }
@@ -322,7 +312,6 @@ function start() {
   reset();
   if (state.daily) { var d = new Date(); state.seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); rng = seededRng(state.seed); }
   else { rng = Math.random; }
-  if (!state.daily) { state.rMin = 2; state.rMax = 5; }
   var startEl = $('start'); if (startEl) startEl.style.display = 'none';
   var endEl = $('end'); if (endEl) endEl.style.display = 'none';
   var game = $('game'); if (game) game.style.display = 'flex';
@@ -355,6 +344,7 @@ for (var i = 0; i < rbs.length; i++) {
     var parts = this.getAttribute('data-r').split(',');
     state.rMin = parseInt(parts[0], 10);
     state.rMax = parseInt(parts[1], 10);
+    rebuildPool();
   };
 }
 
@@ -376,6 +366,7 @@ if (moreBtn && moreRanges) {
         var parts = this.getAttribute('data-r').split(',');
         state.rMin = parseInt(parts[0], 10);
         state.rMax = parseInt(parts[1], 10);
+        rebuildPool();
       };
     }
   };
