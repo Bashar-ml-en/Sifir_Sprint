@@ -1,41 +1,39 @@
-// ==================== STATE ====================
-const state = {
+var state = {
   score: 0, streak: 0, bestStreak: 0, timeRemaining: 60, totalTime: 60,
-  currentQuestion: null, missedQueue: [], prevQText: null,
-  timerId: null, isActive: false, isBusy: false,
+  current: null, missed: [], prev: null,
+  timerId: null, active: false, busy: false,
   soundOn: true, rMin: 2, rMax: 5,
-  correct: 0, wrong: 0, total: 0,
-  isBoss: false, phase: 1, frenzy: false, bossAnswered: false,
+  ok: 0, bad: 0, total: 0,
+  isBoss: false, phase: 1, frenzy: false,
   daily: false, seed: null
 };
 
-let asked = new Set();
-let pool1 = [], pool2 = [], pool3 = [];
-let activePowerup = null, puTimer = null;
-let bossVal = null;
+var asked = {};
+var pool1 = [], pool2 = [], pool3 = [];
+var activePU = null, puTimer = null;
+var bossAns = null;
 
-const $ = id => document.getElementById(id);
-const $$ = sel => document.querySelectorAll(sel);
+function $(id) { return document.getElementById(id); }
+function $$(sel) { return document.querySelectorAll(sel); }
 
-// ==================== HELPERS ====================
 function shuffle(a) {
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
   return a;
 }
 
 function seededRng(seed) {
-  return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  return function() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 }
-let rng = Math.random;
+var rng = Math.random;
 
 function rand(min, max) { return Math.floor(rng() * (max - min + 1)) + min; }
 
 function buildPool(min, max) {
-  const pool = [], seen = new Set();
-  for (let a = min; a <= max; a++) {
-    for (let b = min; b <= max; b++) {
-      const key = a + 'x' + b;
-      if (!seen.has(key)) { seen.add(key); pool.push({ q: a + ' \u00d7 ' + b, a: a * b }); }
+  var pool = [], seen = {};
+  for (var a = min; a <= max; a++) {
+    for (var b = min; b <= max; b++) {
+      var key = a + 'x' + b;
+      if (!seen[key]) { seen[key] = true; pool.push({ q: a + ' x ' + b, a: a * b }); }
     }
   }
   return shuffle(pool);
@@ -49,315 +47,307 @@ function initPools() {
 initPools();
 
 function draw(phase) {
-  const pools = { 1: pool1, 2: pool2, 3: pool3 };
-  let p = pools[phase] || pool1;
+  var pools = { 1: pool1, 2: pool2, 3: pool3 };
+  var p = pools[phase] || pool1;
   if (p.length === 0) {
-    const r = { 1: [2, 5], 2: [4, 9], 3: [7, 12] };
-    const [mn, mx] = r[phase] || [2, 5];
+    var r = { 1: [2, 5], 2: [4, 9], 3: [7, 12] };
+    var mn = r[phase][0], mx = r[phase][1];
     p = shuffle(buildPool(mn, mx));
     if (phase === 1) pool1 = p; else if (phase === 2) pool2 = p; else pool3 = p;
   }
-  for (let i = 0; i < p.length; i++) {
-    const key = p[i].q;
-    if (!asked.has(key)) { asked.add(key); return p.splice(i, 1)[0]; }
+  for (var i = 0; i < p.length; i++) {
+    var key = p[i].q;
+    if (!asked[key]) { asked[key] = true; return p.splice(i, 1)[0]; }
   }
-  asked.clear();
-  if (p.length > 0) { asked.add(p[0].q); return p.splice(0, 1)[0]; }
-  const a = rand(state.rMin, state.rMax), b = rand(state.rMin, state.rMax);
-  return { q: a + ' \u00d7 ' + b, a: a * b };
+  asked = {};
+  if (p.length > 0) { asked[p[0].q] = true; return p.splice(0, 1)[0]; }
+  var a = rand(state.rMin, state.rMax), b = rand(state.rMin, state.rMax);
+  return { q: a + ' x ' + b, a: a * b };
 }
 
-// ==================== SOUND ====================
-let actx = null;
+// Sound
+var actx = null;
 function ctx() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); return actx; }
 function tone(f, d, t) {
   if (!state.soundOn) return;
-  try { const c = ctx(), o = c.createOscillator(), g = c.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime); o.stop(c.currentTime + d); } catch (_) {}
+  try { var c = ctx(), o = c.createOscillator(), g = c.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime); o.stop(c.currentTime + d); } catch (e) {}
 }
-function sndCorrect() { tone(523, 0.15); setTimeout(() => tone(659, 0.15), 80); setTimeout(() => tone(784, 0.2), 160); }
-function sndWrong() { tone(200, 0.25, 'sawtooth'); setTimeout(() => tone(150, 0.3, 'sawtooth'), 120); }
-function sndTick() { tone(880, 0.05, 'square'); }
-function sndEnd() { tone(440, 0.2); setTimeout(() => tone(350, 0.2), 200); setTimeout(() => tone(260, 0.4), 400); }
-function sndBoss() { tone(330, 0.2, 'sawtooth'); setTimeout(() => tone(440, 0.2, 'sawtooth'), 150); setTimeout(() => tone(550, 0.3, 'sawtooth'), 300); }
-function sndPU() { tone(880, 0.1); setTimeout(() => tone(1100, 0.15), 80); }
+function sc() { tone(523, 0.15); setTimeout(function() { tone(659, 0.15); }, 80); setTimeout(function() { tone(784, 0.2); }, 160); }
+function sw() { tone(200, 0.25, 'sawtooth'); setTimeout(function() { tone(150, 0.3, 'sawtooth'); }, 120); }
+function st() { tone(880, 0.05, 'square'); }
+function se() { tone(440, 0.2); setTimeout(function() { tone(350, 0.2); }, 200); setTimeout(function() { tone(260, 0.4); }, 400); }
+function sb() { tone(330, 0.2, 'sawtooth'); setTimeout(function() { tone(440, 0.2, 'sawtooth'); }, 150); setTimeout(function() { tone(550, 0.3, 'sawtooth'); }, 300); }
+function sp() { tone(880, 0.1); setTimeout(function() { tone(1100, 0.15); }, 80); }
 
-// ==================== PERSISTENCE ====================
-let pb = { score: 0, streak: 0 };
-try { const s = localStorage.getItem('sifir-pb'); if (s) pb = JSON.parse(s); } catch (_) {}
-try { const s = localStorage.getItem('sifir-sound'); if (s === 'false') state.soundOn = false; } catch (_) {}
-try { const t = localStorage.getItem('sifir-theme'); if (t) { document.body.className = document.body.className.replace(/theme-\w+/g, '').trim() + ' ' + t; } } catch (_) {}
+// Persistence
+var pb = { score: 0, streak: 0 };
+try { var s = localStorage.getItem('sifir-pb'); if (s) pb = JSON.parse(s); } catch (e) {}
+try { var s = localStorage.getItem('sifir-sound'); if (s === 'false') state.soundOn = false; } catch (e) {}
+try { var t = localStorage.getItem('sifir-theme'); if (t) { document.body.className = document.body.className.replace(/theme-\w+/g, '').trim() + ' ' + t; } } catch (e) {}
 
-function updPb() {
+function updPbUI() {
   $('pb-score').textContent = pb.score + ' correct';
   $('pb-streak').textContent = pb.streak + ' streak';
-  $('pb-motive').textContent = pb.score > 0 ? 'Can you beat your top score today? 🔥' : 'First sprint? Let\'s go! 🚀';
+  $('pb-motive').textContent = pb.score > 0 ? 'Can you beat your top score?' : 'First sprint? Let\'s go!';
 }
-updPb();
+updPbUI();
 
 function savePb(score, streak) {
   if (score > pb.score || (score === pb.score && streak > pb.streak)) {
-    pb = { score, streak };
-    try { localStorage.setItem('sifir-pb', JSON.stringify(pb)); } catch (_) {}
+    pb = { score: score, streak: streak };
+    try { localStorage.setItem('sifir-pb', JSON.stringify(pb)); } catch (e) {}
     return true;
   }
   return false;
 }
 
 function soundUI() {
-  const on = $('snd-on'), off = $('snd-off');
-  if (state.soundOn) { on.classList.remove('hidden'); off.classList.add('hidden'); }
-  else { on.classList.add('hidden'); off.classList.remove('hidden'); }
+  $('snd-on').classList.toggle('hidden', !state.soundOn);
+  $('snd-off').classList.toggle('hidden', state.soundOn);
 }
 soundUI();
 
-// ==================== FLAME ====================
 function flame(s) {
-  const el = $('flame');
+  var el = $('flame');
   if (s < 3) { el.textContent = ''; return; }
-  el.textContent = ['🔥', '🔥🔥', '🔥🔥🔥', '🔥🔥🔥🔥'][Math.min(3, Math.floor((s - 3) / 2))];
+  el.textContent = ['x', 'xx', 'xxx', 'xxxx'][Math.min(3, Math.floor((s - 3) / 2))];
 }
 
-// ==================== POWERUPS ====================
 function grantPU() {
-  if (state.isBoss || !state.isActive) return;
-  const types = [{ id: 'freeze', name: '⏸ Freeze', dur: 4000 }, { id: 'double', name: '🟢 2x Pts', dur: 8000 }];
-  const t = types[Math.floor(Math.random() * 2)];
-  const bar = $('pu-bar');
-  const btn = document.createElement('button');
-  btn.textContent = t.name; btn.dataset.id = t.id;
-  btn.className = 'px-3 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/30 text-emerald-300 text-[11px] font-bold transition-all active:scale-90';
-  btn.onclick = () => {
-    if (activePowerup) return;
+  if (state.isBoss || !state.active) return;
+  var types = [{ id: 'freeze', name: 'Freeze', dur: 4000 }, { id: 'double', name: '2x Pts', dur: 8000 }];
+  var t = types[Math.floor(Math.random() * 2)];
+  var bar = $('pu-bar');
+  var btn = document.createElement('button');
+  btn.textContent = t.name;
+  btn.style.cssText = 'padding:4px 12px;border-radius:999px;border:1px solid rgba(52,211,153,0.4);background:rgba(6,78,59,0.3);color:#6ee7b7;font-size:11px;font-weight:bold';
+  btn.onclick = function() {
+    if (activePU) return;
     clearTimeout(puTimer);
-    activePowerup = t; sndPU();
-    btn.textContent = '✓ Active';
-    btn.className = 'px-3 py-1 rounded-full border border-emerald-400 bg-emerald-800/50 text-white text-[11px] font-bold';
-    puTimer = setTimeout(() => { activePowerup = null; btn.remove(); }, t.dur);
-    setTimeout(() => { for (const c of bar.children) if (c !== btn) c.remove(); }, 200);
+    activePU = t; sp();
+    btn.textContent = 'Active';
+    btn.style.cssText = 'padding:4px 12px;border-radius:999px;border:1px solid #34d399;background:rgba(6,78,59,0.5);color:white;font-size:11px;font-weight:bold';
+    puTimer = setTimeout(function() { activePU = null; btn.remove(); }, t.dur);
+    setTimeout(function() { var c = bar.children; for (var i = 0; i < c.length; i++) { if (c[i] !== btn) c[i].remove(); } }, 200);
   };
   bar.appendChild(btn);
 }
 
 function mult() {
-  let m = 1 + state.streak * 0.5;
-  if (activePowerup && activePowerup.id === 'double') m *= 2;
+  var m = 1 + state.streak * 0.5;
+  if (activePU && activePU.id === 'double') m *= 2;
   if (state.frenzy) m *= 1.5;
   return Math.round(m * 10) / 10;
 }
 
-// ==================== PHASE ====================
 function getPhase(t, total) {
-  const r = (total - t) / total;
+  var r = (total - t) / total;
   if (r < 0.3) return 1;
   if (r < 0.6) return 2;
   return 3;
 }
 
 function updPhase(t, total) {
-  const ph = getPhase(t, total);
+  var ph = getPhase(t, total);
   if (ph !== state.phase) {
     state.phase = ph;
-    asked.clear();
-    const labels = ['', 'EASY', 'MEDIUM', 'HARD'], colors = ['', 'text-emerald-400', 'text-amber-400', 'text-red-400'];
-    const ranges = ['', { mn: 2, mx: 5 }, { mn: 4, mx: 9 }, { mn: 7, mx: 12 }];
-    const el = $('phase');
-    el.textContent = 'PHASE ' + ph + ' \u2022 ' + labels[ph];
-    el.className = 'text-center text-[10px] font-bold uppercase tracking-widest ' + colors[ph] + ' mb-1 transition-all';
+    asked = {};
+    var colors = ['', 'text-green-400', 'text-yellow-400', 'text-red-400'];
+    var ranges = ['', { mn: 2, mx: 5 }, { mn: 4, mx: 9 }, { mn: 7, mx: 12 }];
+    var el = $('phase');
+    el.textContent = 'PHASE ' + ph;
+    el.className = 'text-center text-xs font-bold uppercase tracking-widest ' + colors[ph] + ' mb-1';
     if (!state.daily) { state.rMin = ranges[ph].mn; state.rMax = ranges[ph].mx; }
   }
 }
 
-// ==================== FRENZY ====================
 function updFrenzy(t) {
-  const ov = $('frenzy');
-  if (t <= 10 && t > 0) { state.frenzy = true; ov.classList.remove('hidden'); }
-  else { state.frenzy = false; ov.classList.add('hidden'); }
+  if (t <= 10 && t > 0) { state.frenzy = true; $('frenzy').classList.remove('hidden'); }
+  else { state.frenzy = false; $('frenzy').classList.add('hidden'); }
 }
 
-// ==================== BOSS ====================
 function bossTrigger() {
-  state.isBoss = true; sndBoss();
-  const a = rand(12, 20), b = rand(12, 20);
-  bossVal = { a: a * b, q: a + ' \u00d7 ' + b };
-  $('bq').textContent = bossVal.q;
-  const opts = shuffle([bossVal.a, bossVal.a + rand(1, 4) * (Math.random() < 0.5 ? 1 : -1), bossVal.a + rand(1, 4) * (Math.random() < 0.5 ? 1 : -1), bossVal.a + rand(1, 4) * (Math.random() < 0.5 ? 1 : -1)]);
-  // Ensure no duplicates and no negatives
-  const os = new Set(); opts.forEach(v => { if (v >= 0) os.add(v); });
-  while (os.size < 4) { const off = rand(1, 6) * (Math.random() < 0.5 ? 1 : -1); const v = bossVal.a + off; if (v >= 0) os.add(v); }
-  const finalOpts = shuffle([...os]);
-  $$('.ba').forEach((btn, i) => {
-    btn.textContent = finalOpts[i]; btn.dataset.v = finalOpts[i];
-    btn.className = 'ba font-sans font-bold text-lg py-4 px-4 min-h-[60px] border-2 border-amber-500/40 rounded-2xl bg-[#1A1A2E] text-white';
-    btn.disabled = false;
-  });
+  state.isBoss = true; sb();
+  var a = rand(12, 20), b = rand(12, 20);
+  bossAns = { a: a * b, q: a + ' x ' + b };
+  $('bq').textContent = bossAns.q;
+  var os = new Set(); os.add(bossAns.a);
+  while (os.size < 4) { var off = rand(1, 6) * (Math.random() < 0.5 ? 1 : -1); var v = bossAns.a + off; if (v >= 0) os.add(v); }
+  var fa = shuffle(Array.from(os));
+  var bas = $$('.ba');
+  for (var i = 0; i < bas.length; i++) {
+    bas[i].textContent = fa[i];
+    bas[i].value = fa[i];
+    bas[i].disabled = false;
+  }
   $('boss').classList.remove('hidden');
-  $('game').classList.add('animate-shake');
-  setTimeout(() => $('game').classList.remove('animate-shake'), 300);
 }
 
-$$('.ba').forEach(btn => {
-  btn.onclick = function() {
-    if (state.isBusy || !state.isActive) return;
-    state.isBusy = true;
-    const sel = parseInt(this.dataset.v, 10);
-    const ok = sel === bossVal.a;
-    if (ok) { this.classList.add('correct'); sndCorrect(); state.score += 5; state.streak++; state.correct++; if (state.streak > state.bestStreak) state.bestStreak = state.streak; }
-    else { this.classList.add('wrong'); sndWrong(); state.streak = 0; state.wrong++; }
+// Boss handler
+var bas = $$('.ba');
+for (var i = 0; i < bas.length; i++) {
+  bas[i].onclick = function() {
+    if (state.busy || !state.active) return;
+    state.busy = true;
+    var sel = parseInt(this.value, 10);
+    var ok = sel === bossAns.a;
+    this.className = ok ? 'ba correct' : 'ba wrong';
+    if (ok) { sc(); state.score += 5; state.streak++; state.ok++; if (state.streak > state.bestStreak) state.bestStreak = state.streak; }
+    else { sw(); state.streak = 0; state.bad++; }
     state.total++;
     hud();
-    setTimeout(() => {
-      $('boss').classList.add('hidden'); state.isBoss = false; state.isBusy = false;
+    var self = this;
+    setTimeout(function() {
+      $('boss').classList.add('hidden');
+      state.isBoss = false;
+      state.busy = false;
+      self.className = 'ba';
       nextQ();
     }, 400);
   };
-});
+}
 
-// ==================== CORE ====================
 function nextQ() {
-  if (!state.isActive) {
-    state.isBusy = false;
-    return;
-  }
-  // If boss battle is showing, wait - don't update buttons
-  if (state.isBoss) {
-    state.isBusy = false;
-    return;
-  }
-  let q;
-  const useMissed = state.missedQueue.length >= 3 && Math.random() < 0.4;
+  if (!state.active) { state.busy = false; return; }
+  if (state.isBoss) { state.busy = false; return; }
+  var q;
+  var useMissed = state.missed.length >= 3 && Math.random() < 0.4;
   if (useMissed) {
-    q = state.missedQueue.shift();
-    if (q.q === state.prevQText) { state.missedQueue.push(q); q = state.missedQueue.shift(); }
+    q = state.missed.shift();
+    if (q.q === state.prev) { state.missed.push(q); q = state.missed.shift(); }
   } else {
-    let att = 0;
-    do { q = draw(state.phase); att++; } while (q.q === state.prevQText && att < 50);
+    var att = 0;
+    do { q = draw(state.phase); att++; } while (q.q === state.prev && att < 50);
   }
-  state.currentQuestion = q;
-  state.prevQText = q.q;
+  state.current = q;
+  state.prev = q.q;
   $('qt').textContent = q.q;
-  const opts = shuffle([q.a, q.a + rand(1, 4) * (Math.random() < 0.5 ? 1 : -1), q.a + rand(1, 4) * (Math.random() < 0.5 ? 1 : -1), q.a + rand(1, 4) * (Math.random() < 0.5 ? 1 : -1)]);
-  const os = new Set(); opts.forEach(v => { if (v >= 0) os.add(v); });
-  while (os.size < 4) { const off = rand(1, 6) * (Math.random() < 0.5 ? 1 : -1); const v = q.a + off; if (v >= 0) os.add(v); }
-  const finalOpts = shuffle([...os]);
-  $$('.ab').forEach((btn, i) => {
-    btn.textContent = finalOpts[i]; btn.dataset.v = finalOpts[i];
-    btn.className = 'ab font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white';
-    btn.disabled = false;
-  });
-  state.isBusy = false;
+  var os = new Set(); os.add(q.a);
+  while (os.size < 4) { var off = rand(1, 6) * (Math.random() < 0.5 ? 1 : -1); var v = q.a + off; if (v >= 0) os.add(v); }
+  var fa = shuffle(Array.from(os));
+  var abs = $$('.ab');
+  for (var i = 0; i < abs.length; i++) {
+    abs[i].textContent = fa[i];
+    abs[i].value = fa[i];
+    abs[i].disabled = false;
+    abs[i].className = 'ab';
+  }
+  state.busy = false;
 }
 
-function afterAnswer() {
-  state.total++; hud();
-  setTimeout(function() {
-    state.isBusy = false;
-    nextQ();
-  }, 300);
-}
-
-$$('.ab').forEach(function(btn) {
-  btn.onclick = function() {
-    if (state.isBusy || !state.isActive || btn.disabled) return;
-    state.isBusy = true;
-    btn.disabled = true;
-    var sel = parseInt(this.dataset.v, 10);
-    var q = state.currentQuestion;
-    if (!q) { state.isBusy = false; return; }
+// Answer handler
+var abs = $$('.ab');
+for (var i = 0; i < abs.length; i++) {
+  abs[i].index = i;
+  abs[i].onclick = function() {
+    if (state.busy || !state.active || this.disabled) return;
+    state.busy = true;
+    this.disabled = true;
+    var sel = parseInt(this.value, 10);
+    var q = state.current;
+    if (!q) { state.busy = false; return; }
     var ok = sel === q.a;
     if (ok) {
-      this.className = 'ab font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white correct';
-      sndCorrect();
-      state.score += Math.round(mult()); state.streak++; state.correct++;
+      sc();
+      state.score += Math.round(mult());
+      state.streak++;
+      state.ok++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       if (state.streak >= 3) {
         var pop = $('combo');
         pop.textContent = 'x' + mult();
-        pop.classList.remove('hidden', 'animate-combo-pop');
-        void pop.offsetWidth;
-        pop.classList.add('animate-combo-pop');
-        setTimeout(function() { pop.classList.add('hidden'); }, 600);
+        pop.className = 'combo-pop';
+        setTimeout(function() { pop.className = 'combo-pop hidden'; }, 600);
       }
       flame(state.streak);
-      if (state.correct > 0 && state.correct % 7 === 0) { try { grantPU(); } catch(_) {} }
-      if (state.correct > 0 && state.correct % 10 === 0) { setTimeout(function() { try { bossTrigger(); } catch(_) {} }, 300); }
+      this.className = 'ab correct';
+      if (state.ok > 0 && state.ok % 7 === 0) grantPU();
+      if (state.ok > 0 && state.ok % 10 === 0) setTimeout(function() { bossTrigger(); }, 300);
     } else {
-      this.className = 'ab font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white wrong';
-      sndWrong();
-      state.streak = 0; state.wrong++;
+      sw();
+      state.streak = 0;
+      state.bad++;
       flame(0);
-      state.missedQueue.push({ q: q.q, a: q.a });
+      state.missed.push({ q: q.q, a: q.a });
+      this.className = 'ab wrong';
     }
-    afterAnswer();
+    state.total++;
+    hud();
+    var self = this;
+    setTimeout(function() {
+      self.className = 'ab';
+      nextQ();
+    }, 300);
   };
-});
+}
 
 function hud() {
-  $('score').textContent = state.score;
-  $('streak').textContent = state.streak;
-  $('bstreak').textContent = state.bestStreak;
-  $('timer').textContent = state.timeRemaining;
-  $('timer').className = state.timeRemaining <= 10 ? 'block text-xl font-extrabold warning' : 'block text-xl font-extrabold text-[#fbbf24]';
-  const r = state.timeRemaining / state.totalTime;
+  $('score').textContent = state.score + '';
+  $('streak').textContent = state.streak + '';
+  $('bstreak').textContent = state.bestStreak + '';
+  $('timer').textContent = state.timeRemaining + '';
+  $('timer').style.color = state.timeRemaining <= 10 ? '#f87171' : '#fbbf24';
+  var r = state.timeRemaining / state.totalTime;
   $('tbar').style.width = (r * 100) + '%';
-  $('tbar').style.background = r <= 1 / 6 ? 'linear-gradient(90deg,#ef4444,#dc2626)' : r <= 0.5 ? 'linear-gradient(90deg,#f59e0b,#f97316)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)';
+  $('tbar').style.background = r <= 1/6 ? 'linear-gradient(90deg,#ef4444,#dc2626)' : r <= 0.5 ? 'linear-gradient(90deg,#f59e0b,#f97316)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)';
   updPhase(state.timeRemaining, state.totalTime);
   updFrenzy(state.timeRemaining);
 }
 
 function tick() {
-  state.timerId = setInterval(() => {
+  state.timerId = setInterval(function() {
     state.timeRemaining--;
-    if (state.timeRemaining <= 10 && state.timeRemaining > 0) sndTick();
+    if (state.timeRemaining <= 10 && state.timeRemaining > 0) st();
     hud();
     if (state.timeRemaining <= 0) end();
   }, 1000);
 }
 
 function grade(sc, total) {
-  const r = sc / (total * 2);
-  if (r >= 0.8) return { g: 'S', c: 'text-amber-400' };
-  if (r >= 0.6) return { g: 'A', c: 'text-emerald-400' };
+  if (total <= 0) return { g: '-', c: 'text-slate-400' };
+  var r = sc / (total * 2);
+  if (r >= 0.8) return { g: 'S', c: 'text-yellow-400' };
+  if (r >= 0.6) return { g: 'A', c: 'text-green-400' };
   if (r >= 0.4) return { g: 'B', c: 'text-blue-400' };
   if (r >= 0.2) return { g: 'C', c: 'text-purple-400' };
   return { g: 'D', c: 'text-slate-400' };
 }
 
 function end() {
-  state.isActive = false;
-  clearInterval(state.timerId); state.timerId = null;
+  state.active = false;
+  clearInterval(state.timerId);
+  state.timerId = null;
   $('frenzy').classList.add('hidden');
-  sndEnd();
-  const npb = savePb(state.score, state.bestStreak);
-  updPb();
+  se();
+  var npb = savePb(state.score, state.bestStreak);
+  updPbUI();
   $('game').style.display = 'none';
   $('end').style.display = 'flex';
-  $('fs').textContent = state.score;
-  $('fst').textContent = state.bestStreak;
-  $('fc').textContent = state.correct;
-  $('fw').textContent = state.wrong;
-  $('fa').textContent = state.total > 0 ? Math.round(state.correct / state.total * 100) + '%' : '0%';
+  $('fs').textContent = state.score + '';
+  $('fst').textContent = state.bestStreak + '';
+  $('fc').textContent = state.ok + '';
+  $('fw').textContent = state.bad + '';
+  $('fa').textContent = state.total > 0 ? Math.round(state.ok / state.total * 100) + '%' : '0%';
   $('pb-badge').style.display = npb ? 'flex' : 'none';
-  const g = grade(state.score, state.totalTime);
-  const ge = $('grade');
-  ge.textContent = g.g;
-  ge.className = 'text-5xl font-extrabold mb-3 ' + g.c + ' animate-combo-pop';
-  const sh = $('share');
-  if (state.daily) { sh.classList.remove('hidden'); sh.classList.add('flex'); }
-  else { sh.classList.add('hidden'); sh.classList.remove('flex'); }
+  var g = grade(state.score, state.totalTime);
+  $('grade').textContent = g.g;
+  $('grade').className = 'text-5xl font-extrabold mb-3 ' + g.c;
+  if (state.daily) { $('share').classList.remove('hidden'); $('share').style.display = 'flex'; }
+  else { $('share').classList.add('hidden'); }
 }
 
 function reset() {
   state.score = 0; state.streak = 0; state.bestStreak = 0;
   state.timeRemaining = state.totalTime;
-  state.currentQuestion = null; state.missedQueue = []; state.prevQText = null;
-  state.isActive = false; state.isBusy = false;
-  state.correct = 0; state.wrong = 0; state.total = 0;
+  state.current = null; state.missed = []; state.prev = null;
+  state.active = false; state.busy = false;
+  state.ok = 0; state.bad = 0; state.total = 0;
   state.isBoss = false; state.phase = 1; state.frenzy = false;
-  activePowerup = null;
+  activePU = null;
   if (puTimer) { clearTimeout(puTimer); puTimer = null; }
   $('pu-bar').innerHTML = '';
   flame(0);
-  asked.clear();
+  asked = {};
   if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
   hud();
 }
@@ -365,7 +355,7 @@ function reset() {
 function start() {
   reset();
   if (state.daily) {
-    const d = new Date();
+    var d = new Date();
     state.seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
     rng = seededRng(state.seed);
   } else { rng = Math.random; }
@@ -373,80 +363,70 @@ function start() {
   $('start').style.display = 'none';
   $('end').style.display = 'none';
   $('game').style.display = 'flex';
-  state.isActive = true;
+  state.active = true;
   nextQ();
   tick();
 }
 
-// ==================== UI WIRING ====================
+// UI
 function setMode(m) {
   state.daily = m === 'daily';
-  const arc = $('mode-a'), daily = $('mode-d');
-  [arc, daily].forEach(b => {
-    b.classList.remove('border-purple-400', 'bg-purple-950/80', 'text-white');
-    b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-  });
-  const a = m === 'daily' ? daily : arc;
-  a.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-  a.classList.add('border-purple-400', 'bg-purple-950/80', 'text-white');
+  var arc = $('mode-a'), daily = $('mode-d');
+  arc.className = m === 'arcade' ? 'flex-1 py-2 px-3 rounded-full border border-purple-400 bg-purple-950/80 text-white text-xs font-bold' : 'flex-1 py-2 px-3 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 text-xs font-bold';
+  daily.className = m === 'daily' ? 'flex-1 py-2 px-3 rounded-full border border-purple-400 bg-purple-950/80 text-white text-xs font-bold' : 'flex-1 py-2 px-3 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 text-xs font-bold';
   $('mode-lbl').textContent = m === 'daily' ? 'Daily Challenge' : 'Arcade Mode';
 }
-$('mode-a').onclick = () => setMode('arcade');
-$('mode-d').onclick = () => setMode('daily');
+$('mode-a').onclick = function() { setMode('arcade'); };
+$('mode-d').onclick = function() { setMode('daily'); };
 
-$$('.range-btn').forEach(btn => {
-  btn.onclick = () => {
-    $$('.range-btn').forEach(b => {
-      b.classList.remove('border-purple-400', 'bg-purple-950/80', 'text-white');
-      b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-    });
-    btn.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-    btn.classList.add('border-purple-400', 'bg-purple-950/80', 'text-white');
-    const [mn, mx] = btn.dataset.r.split(',').map(Number);
-    state.rMin = mn; state.rMax = mx;
+var rbs = $$('.range-btn');
+for (var i = 0; i < rbs.length; i++) {
+  rbs[i].onclick = function() {
+    for (var j = 0; j < rbs.length; j++) { rbs[j].className = 'range-btn text-xs py-1.5 px-2.5 rounded-lg border border-slate-700/80 bg-slate-900/40 text-slate-300'; }
+    this.className = 'range-btn text-xs py-1.5 px-2.5 rounded-lg border border-purple-400 bg-purple-950/80 text-white font-bold';
+    var parts = this.getAttribute('data-r').split(',');
+    state.rMin = parseInt(parts[0], 10);
+    state.rMax = parseInt(parts[1], 10);
   };
-});
+}
 
-$$('.dur-btn').forEach(btn => {
-  btn.onclick = () => {
-    $$('.dur-btn').forEach(b => {
-      b.classList.remove('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white');
-      b.classList.add('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-    });
-    btn.classList.remove('border-slate-700/80', 'bg-slate-900/40', 'text-slate-300');
-    btn.classList.add('selected', 'border-purple-400', 'bg-purple-950/80', 'text-white');
-    state.totalTime = parseInt(btn.dataset.sec, 10);
+var dbs = $$('.dur-btn');
+for (var i = 0; i < dbs.length; i++) {
+  dbs[i].onclick = function() {
+    for (var j = 0; j < dbs.length; j++) { dbs[j].className = 'dur-btn px-3 py-2.5 rounded-full border border-slate-700/80 bg-slate-900/40 text-slate-300 text-xs font-bold'; }
+    this.className = 'dur-btn selected px-3 py-2.5 rounded-full border border-purple-400 bg-purple-950/80 text-white text-xs font-bold';
+    state.totalTime = parseInt(this.getAttribute('data-sec'), 10);
     state.timeRemaining = state.totalTime;
-    const labels = { 120: '120 seconds', 60: '60 seconds', 30: '30 seconds' };
+    var labels = { 120: '120 seconds', 60: '60 seconds', 30: '30 seconds' };
     $('tc').textContent = labels[state.totalTime] || '60 seconds';
     hud();
   };
-});
+}
 
-$$('.theme-btn').forEach(btn => {
-  btn.onclick = () => {
-    $$('.theme-btn').forEach(b => {
-      b.className = b.className.replace(/border-[\w-]+(\s+shadow-\[?[^\]]*\]?)?/g, 'border border-slate-700/80');
-    });
-    btn.className = btn.className.replace(/border-[\w/-]+/g, 'border-2 border-purple-400');
-    const t = btn.dataset.theme;
-    document.body.className = document.body.className.replace(/theme-\w+/g, '').trim() + ' ' + t;
-    try { localStorage.setItem('sifir-theme', t); } catch (_) {}
+var tbs = $$('.theme-btn');
+for (var i = 0; i < tbs.length; i++) {
+  tbs[i].onclick = function() {
+    for (var j = 0; j < tbs.length; j++) { tbs[j].style.borderColor = '#334155'; tbs[j].style.borderWidth = '1px'; }
+    this.style.borderColor = '#a78bfa';
+    this.style.borderWidth = '2px';
+    var theme = this.getAttribute('data-theme');
+    document.body.className = document.body.className.replace(/theme-\w+/g, '').trim() + ' ' + theme;
+    try { localStorage.setItem('sifir-theme', theme); } catch (e) {}
   };
-});
+}
 
-$('snd').onclick = () => {
+$('snd').onclick = function() {
   state.soundOn = !state.soundOn;
-  try { localStorage.setItem('sifir-sound', state.soundOn); } catch (_) {}
+  try { localStorage.setItem('sifir-sound', state.soundOn); } catch (e) {}
   soundUI();
 };
 
-$('rpb').onclick = () => {
-  if (confirm('Reset your personal best?')) { pb = { score: 0, streak: 0 }; try { localStorage.setItem('sifir-pb', JSON.stringify(pb)); } catch (_) {} updPb(); }
+$('rpb').onclick = function() {
+  if (confirm('Reset your personal best?')) { pb = { score: 0, streak: 0 }; try { localStorage.setItem('sifir-pb', JSON.stringify(pb)); } catch (e) {} updPbUI(); }
 };
 
-$('share').onclick = () => {
-  const txt = 'Sifir Sprint Daily - Score: ' + state.score + ', Streak: ' + state.bestStreak;
+$('share').onclick = function() {
+  var txt = 'Sifir Sprint Daily - Score: ' + state.score + ', Streak: ' + state.bestStreak;
   if (navigator.share) { navigator.share({ title: 'Sifir Sprint', text: txt, url: 'https://sifir-sprint.vercel.app' }); }
   else { navigator.clipboard.writeText(txt); }
 };
@@ -454,6 +434,6 @@ $('share').onclick = () => {
 $('start-btn').onclick = start;
 $('again-btn').onclick = start;
 
-document.onkeydown = (e) => {
+document.onkeydown = function(e) {
   if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && $('start').style.display !== 'none') { e.preventDefault(); start(); }
 };
