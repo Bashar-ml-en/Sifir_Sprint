@@ -99,6 +99,17 @@ function soundUI() {
   if (off) off.style.display = state.soundOn ? 'none' : '';
 }
 
+function calcPoints() {
+  var base = 1;
+  var bonus = 0;
+  if (state.streak >= 10) bonus = 2;
+  else if (state.streak >= 5) bonus = 1;
+  var frenzy = state.frenzy ? 1 : 0;
+  var total = base + bonus + frenzy;
+  if (activePU && activePU.id === 'double') total *= 2;
+  return total;
+}
+
 function flame(s) {
   var el = $('flame');
   if (!el) return;
@@ -183,14 +194,15 @@ for (var i = 0; i < abs.length; i++) {
       var ok = sel === q.a;
       if (ok) {
         sc();
-        state.score += Math.round(1 + state.streak * 0.5);
+        var pts = calcPoints();
+        state.score += pts;
         state.streak++;
         state.ok++;
         if (state.streak > state.bestStreak) state.bestStreak = state.streak;
         this.className = 'ab correct';
         if (state.streak >= 3) {
           var pop = $('combo');
-          if (pop) { pop.textContent = 'x' + Math.round((1 + state.streak * 0.5) * 10) / 10; pop.style.display = ''; setTimeout(function() { pop.style.display = 'none'; }, 600); }
+          if (pop) { pop.textContent = '+' + pts; pop.style.display = ''; setTimeout(function() { pop.style.display = 'none'; }, 600); }
         }
         flame(state.streak);
       } else {
