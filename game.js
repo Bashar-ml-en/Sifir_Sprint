@@ -214,7 +214,15 @@ $$('.ba').forEach(btn => {
 
 // ==================== CORE ====================
 function nextQ() {
-  if (!state.isActive || state.isBoss) return;
+  if (!state.isActive) {
+    state.isBusy = false;
+    return;
+  }
+  // If boss battle is showing, wait - don't update buttons
+  if (state.isBoss) {
+    state.isBusy = false;
+    return;
+  }
   let q;
   const useMissed = state.missedQueue.length >= 3 && Math.random() < 0.4;
   if (useMissed) {
@@ -239,38 +247,47 @@ function nextQ() {
   state.isBusy = false;
 }
 
-$$('.ab').forEach(btn => {
+function afterAnswer() {
+  state.total++; hud();
+  setTimeout(function() {
+    state.isBusy = false;
+    nextQ();
+  }, 300);
+}
+
+$$('.ab').forEach(function(btn) {
   btn.onclick = function() {
     if (state.isBusy || !state.isActive || btn.disabled) return;
-    state.isBusy = true; btn.disabled = true;
-    const sel = parseInt(this.dataset.v, 10);
-    const q = state.currentQuestion;
-    const ok = sel === q.a;
+    state.isBusy = true;
+    btn.disabled = true;
+    var sel = parseInt(this.dataset.v, 10);
+    var q = state.currentQuestion;
+    if (!q) { state.isBusy = false; return; }
+    var ok = sel === q.a;
     if (ok) {
-      this.classList.remove('border-purple-500/20', 'bg-[#0F1528]');
-      this.classList.add('correct'); sndCorrect();
+      this.className = 'ab font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white correct';
+      sndCorrect();
       state.score += Math.round(mult()); state.streak++; state.correct++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       if (state.streak >= 3) {
-        const pop = $('combo');
+        var pop = $('combo');
         pop.textContent = 'x' + mult();
         pop.classList.remove('hidden', 'animate-combo-pop');
         void pop.offsetWidth;
         pop.classList.add('animate-combo-pop');
-        setTimeout(() => pop.classList.add('hidden'), 600);
+        setTimeout(function() { pop.classList.add('hidden'); }, 600);
       }
       flame(state.streak);
-      if (state.correct > 0 && state.correct % 7 === 0) grantPU();
-      if (state.correct > 0 && state.correct % 10 === 0) setTimeout(bossTrigger, 300);
+      if (state.correct > 0 && state.correct % 7 === 0) { try { grantPU(); } catch(_) {} }
+      if (state.correct > 0 && state.correct % 10 === 0) { setTimeout(function() { try { bossTrigger(); } catch(_) {} }, 300); }
     } else {
-      this.classList.remove('border-purple-500/20', 'bg-[#0F1528]');
-      this.classList.add('wrong'); sndWrong();
+      this.className = 'ab font-sans font-bold text-lg sm:text-xl py-5 px-4 min-h-[68px] border-2 border-purple-500/20 rounded-2xl bg-[#0F1528] text-white wrong';
+      sndWrong();
       state.streak = 0; state.wrong++;
       flame(0);
-      state.missedQueue.push({ ...q });
+      state.missedQueue.push({ q: q.q, a: q.a });
     }
-    state.total++; hud();
-    setTimeout(() => { state.isBusy = false; nextQ(); }, 300);
+    afterAnswer();
   };
 });
 
