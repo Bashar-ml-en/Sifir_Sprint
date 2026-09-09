@@ -8,9 +8,10 @@
   },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 1500,
+      "launchShowDuration": 2000,
       "backgroundColor": "#070A14",
-      "androidSplashResourceName": "splash"
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
     }
   }
 }

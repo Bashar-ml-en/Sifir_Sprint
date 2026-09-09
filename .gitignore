@@ -3,3 +3,9 @@ node_modules
 dist
 *.local
 .DS_Store
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+ios/App/Pods
+ios/App/Podfile.lock
