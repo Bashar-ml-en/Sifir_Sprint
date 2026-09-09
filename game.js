@@ -558,6 +558,7 @@ function end() {
   if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
   var ov = $('frenzy'); if (ov) ov.style.display = 'none';
   se();
+  try { if (typeof onGameEnd === 'function') onGameEnd(function(){}); } catch(e) {}
   var npb = savePb(state.score, state.bestStreak);
   updPbUI();
   $('game').style.display = 'none';
@@ -582,6 +583,7 @@ function end() {
   }
   var sh = $('share');
   if (sh) { sh.style.display = state.daily ? 'flex' : 'none'; }
+  tryShowBonus();
 }
 
 function reset() {
@@ -614,6 +616,7 @@ function start() {
   updRangeIndicator();
   nextQ();
   tick();
+  try { if (typeof onGameStart === 'function') onGameStart(); } catch(e) {}
 }
 
 function setMode(m) {
@@ -719,6 +722,29 @@ $('share').onclick = function() {
   if (navigator.share) { try { navigator.share({ title: 'Sifir Sprint', text: txt, url: 'https://sifir-sprint.vercel.app' }); } catch (e) {} }
   else { try { navigator.clipboard.writeText(txt); } catch (e) {} }
 };
+
+// Bonus time via rewarded ad
+$('bonus-btn').onclick = function() {
+  if (typeof onRequestBonusTime === 'function') {
+    onRequestBonusTime(function(watched) {
+      if (watched) {
+        $('bonus-btn').style.display = 'none';
+        hud();
+      } else {
+        $('bonus-btn').style.opacity = '0.5';
+        setTimeout(function() { $('bonus-btn').style.opacity = '1'; }, 2000);
+      }
+    });
+  }
+};
+
+// Show bonus button if AdMob available
+function tryShowBonus() {
+  var btn = $('bonus-btn');
+  if (btn && typeof AdMob !== 'undefined' && typeof onRequestBonusTime === 'function') {
+    btn.style.display = 'flex';
+  }
+}
 
 $('start-btn').onclick = start;
 $('again-btn').onclick = start;

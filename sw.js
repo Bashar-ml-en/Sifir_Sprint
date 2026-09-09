@@ -1,5 +1,5 @@
 var CACHE = 'sifir-sprint-v1';
-var URLS = ['/', '/index.html', '/game.js', '/manifest.json'];
+var URLS = ['/', '/index.html', '/game.js', '/ads.js', '/manifest.json'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(URLS); }));

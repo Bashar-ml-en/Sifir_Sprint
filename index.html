@@ -270,12 +270,17 @@
       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       <span>Share Score</span>
     </button>
+    <button id="bonus-btn" class="w-full max-w-[330px] mb-3 py-3 px-4 rounded-full border border-amber-500/40 bg-amber-950/20 text-amber-300 text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-2 hover:bg-amber-950/40 hidden">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      <span>Watch Ad for +5 Seconds</span>
+    </button>
     <button id="again-btn" class="w-full max-w-[330px] py-4 px-8 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 text-white font-extrabold text-lg tracking-wide btn-glow transition-all flex items-center justify-center gap-2 group cursor-pointer" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
       <span>Play Again</span>
       <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
     </button>
   </div>
 
+  <script src="ads.js"></script>
   <script src="game.js"></script>
   <script>if('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }</script>
 </body>

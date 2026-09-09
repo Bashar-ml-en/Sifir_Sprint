@@ -4,7 +4,7 @@
   "description": "Sifir Sprint - 60-second times-tables arcade quiz game (Android + Web)",
   "private": true,
   "scripts": {
-    "build:web": "node -e \"require('fs').cpSync('index.html', 'dist/index.html');require('fs').cpSync('game.js', 'dist/game.js');require('fs').cpSync('manifest.json', 'dist/manifest.json');require('fs').cpSync('sw.js', 'dist/sw.js')\"",
+    "build:web": "node -e \"require('fs').cpSync('index.html', 'dist/index.html');require('fs').cpSync('game.js', 'dist/game.js');require('fs').cpSync('ads.js', 'dist/ads.js');require('fs').cpSync('manifest.json', 'dist/manifest.json');require('fs').cpSync('sw.js', 'dist/sw.js')\"",
     "build:android": "npx cap sync android",
     "build": "npm run build:web && npm run build:android",
     "build:ios": "npx cap sync ios",
@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/Bashar-ml-en/Sifir_Sprint#readme",
   "dependencies": {
+    "@capacitor-community/admob": "^8.1.0",
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1",
